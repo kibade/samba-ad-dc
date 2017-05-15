@@ -1,11 +1,33 @@
 How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
 ----------------------------------------------------------------------------
+* Version: 1.0
++ Updated: May 14, 2017
+
+
+* Change Log
+	++ V.1.0, released May 14, 2017:
+	- Added Version, Change Log, and References sections to the doc.
+	- Updated "Install ... packages" to add the 'rsync' package.
+	- Updated "Configure time synch" to correct the placement of the
+		"tinker panic 0" line in ntp.conf.
+	- Updated "Provision ... AD" to add the "interfaces" and "bind
+		only interfaces" options to the command line.
+	- Made a few little cosmetic/aesthetic changes to text and formatting.
+
+	++ V.0.9, released May 10, 2017:
+	- Initial release.
+
+
+* References:
+https://wiki.samba.org/index.php/Setting_up_Samba_as_an_Active_Directory_Domain_Controller
+
 
 * Assumptions:
 + The AD DC will be installed on a new minimal install of Debian Stretch.
 + The AD DC will be the first DC of a brand new AD domain.
 + The AD DC will have precisely one network interface (other than loopback).
 + The AD DC will begin as a DHCP client on the network.
+
 
 * Discover or choose parameter values for the AD DC:
 
@@ -29,6 +51,7 @@ How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
 	NTP_SERVER1		time.sd57.bc.ca
 	REV_DNS_ZONE		0.16.172.in-addr.arpa
 
+
 * Configure a static IP address
 
 	+ Do the following in a console, as the network will drop.
@@ -48,15 +71,12 @@ How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
 
 	ifup ${INTERFACE_NAME}
 
+
 * Configure local host name resolution
 
 	+ From here on, it is okay to continue in an SSH session.
 
-	########(begin): /etc/hostname:
-
-	${HOSTNAME}
-
-	########(end)
+	echo "${HOSTNAME}" >/etc/hostname
 
 	########(begin fragment): /etc/hosts
 
@@ -64,23 +84,27 @@ How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
 
 	########(end)
 
+
 * Install the necessary software packages
 
 	apt-get update
 	apt-get install samba winbind ntp krb5-user dnsutils ldap-utils \
-		ldb-tools smbclient libnss-winbind acl
+		ldb-tools smbclient libnss-winbind acl rsync
+
 
 * Stop and disable the samba services
 
 	systemctl stop    smbd nmbd winbind
 	systemctl disable smbd nmbd winbind
 
+
 * Deconfigure samba and kerberos
 
 	CONFIGFILE=$(smbd -b |egrep CONFIGFILE |cut -f2- -d':' |sed 's/^ *//')
 
-	rm -f "${CONFIGFILE}"
-	rm -f /etc/krb5.conf
+	rm "${CONFIGFILE}"
+	rm /etc/krb5.conf
+
 
 * Remove all local samba cache and database files
 
@@ -93,10 +117,13 @@ How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
 		\( -iname '*.tdb' -o -iname '*.ldb' -o -iname '*.dat' \) \
 		-print -delete
 
+
 * Configure time synch
 
 	########(begin fragment): /etc/ntp.conf
 
+	tinker panic 0
+	... 	...
 	#pool 0.debian.pool.ntp.org iburst
 	#pool 1.debian.pool.ntp.org iburst
 	#pool 2.debian.pool.ntp.org iburst
@@ -104,11 +131,13 @@ How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
 
 	pool ${NTP_SERVER1} iburst
 
-	tinker panic 0
-
 	########(end)
 
+	+ i.e.: Comment out the Debian pool servers, and add ${NTP_SERVER1}.
+	+ Also: The "tinker panic 0" line must be the first line in ntp.conf.
+
 	systemctl restart ntp
+
 
 * Re-configure DNS resolution
 
@@ -120,22 +149,29 @@ How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
 
 	########(end)
 
+
 * Reboot to make all modified settings active (especially the name changes)
 
 	reboot
 
+
 * Provision the new AD domain
 
-	samba-tool domain provision --use-rfc2307 --interactive
+	samba-tool domain provision --use-rfc2307 \
+		--option="interfaces=lo ${INTERFACE_NAME}" \
+		--option="bind interfaces only=yes" \
+		--interactive
 
 	+ Interactive mode: accept all the default answers, except for:
 		- DNS forwarder: set to: 199.175.16.2
 		- Administrator password: "Let's Pick" with last letter repeated
 
+
 * Configure kerberos
 
 	cd /etc/
 	ln -s "${PRIVATE_DIR}/krb5.conf"
+
 
 * Configure Name Service Switch (NSS)
 
@@ -148,15 +184,22 @@ How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
 
 	+ i.e.: add 'winbind' to the end of the 'passwd' and 'group' lines.
 
+
 * Unmask, enable and start the samba-ad-dc service
 
 	systemctl unmask samba-ad-dc
 	systemctl enable samba-ad-dc
 	systemctl start samba-ad-dc
+	systemctl status samba-ad-dc
+
+	+ The last command must show the service as "active (running)".
+		If not, then troubleshooting is necessary before continuing.
+
 
 * Create the reverse DNS lookup zone
 
 	samba-tool dns zonecreate localhost ${REV_DNS_ZONE} -UAdministrator
+
 
 * Add a PTR record for the DC to the reverse lookup zone
 
@@ -165,11 +208,14 @@ How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
 	samba-tool dns add localhost ${REV_DNS_ZONE} ${HOST_NUM} PTR \
 		${HOSTNAME}.${DOMAIN_FQDN}. -UAdministrator
 
+
 * Save a backup of the local idmap (for later, when joining more DCs)
 
 	tdbbackup -s .bak "${PRIVATE_DIR}/idmap.ldb"
 
-* Note: The remainder of the steps are only tests; i.e. no more changes.
+
+* Note: The remainder of the steps are only tests; i.e. no more config changes.
+
 
 * Test the correctness of ownerships/permissions on sysvol
 
@@ -179,10 +225,12 @@ How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
 
 		samba-tool ntacl sysvolreset
 
+
 * Test availability of kerberos
 
 	kinit administrator
 	klist
+
 
 * Test availability of the local 'sysvol' and 'netlogon' samba shares
 
@@ -193,6 +241,7 @@ How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
 	smbclient //localhost/netlogon -UAdministrator -c ls
 
 	+ Should return without error.
+
 
 * Test the local DNS service 
 
@@ -211,6 +260,7 @@ How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
 
 	+ Expect to see the domain's NS and A records, not errors.
 
+
 * Test the Directory
 
 	wbinfo --ping-dc
@@ -227,11 +277,14 @@ How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
 
 	+ Expect to see Administrator and "Domain Users" IDs.
 
+
 * Show the FSMO roles
 
 	samba-tool fsmo show
 
 	+ Expect to see 7 roles listed, all held by the new DC.
 
+
 * Done
+
 
