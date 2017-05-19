@@ -207,7 +207,7 @@ Default\_user
          -   Internet Settings
              -   New-&gt;Internet Explorer 10 Properties
                  -   General
-                     -   Home page: https://www.sd57.bc.ca/school/&lt;SCHOOLCODE&gt;/Pages/default.aspx
+                     -   Home page: https://www.sd57.bc.ca/school/<SCHOOLCODE\>/Pages/default.aspx
                      -   Start with home page
          -   Connections
              -   LAN Settings
@@ -247,7 +247,7 @@ Staff\_Users\_Policy
             -   Drive Maps
                 -   New-&gt; Mapped Drive
                     -   Action: Create
-                    -   Location:
+                    -   Location: \\\\FileServer\\Staff
                     -   Reconnect: Yes
                     -   Label as: Staff Drive
                     -   Use: S: Drive
