@@ -1,10 +1,18 @@
 # How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
 
-__Version:__ 1.1
+__Version:__ 2.0
 
-__Updated:__ May 20, 2017
+__Updated:__ May 22, 2017
 
 __Change Log:__
++ v.2.0, released May 22, 2017:
+  - Updated "Provision the ... domain" to add "winbind separator".
+  - Updated "Configure local ... resolution" to add "hostname" cmd.
+  - Split "Install the ... packages" into three separate sections.
+  - Renamed "Test the Directory" to "Test Winbind".
+  - Moved "Test Winbind" ahead of "Save a backup of the local idmap ...".
+  - Updated the formatting of "Start the samba-ad-dc service".
+  - Added status checks to several sections.
 + v.1.1, released May 20, 2017:
   - Copied Create-AD-DC-Samba4.txt, and reformatted it in Markdown.
 + v.1.0, released May 14, 2017:
@@ -84,6 +92,10 @@ echo "${HOSTNAME}" >/etc/hostname
 ```
 ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 ```
++ As root, run the following:
+```
+hostname --file /etc/hostname
+```
 
 ---
 ### Install the necessary software packages
@@ -93,12 +105,21 @@ apt-get update
 apt-get install samba winbind ntp krb5-user dnsutils ldap-utils \
         ldb-tools smbclient libnss-winbind acl rsync
 ```
-+ Stop and disable the samba services, by running the following as root:
+
+---
+### Stop and disable the samba services
++ As root, run the following:
 ```
 systemctl stop    smbd nmbd winbind
 systemctl disable smbd nmbd winbind
+systemctl status  smbd nmbd winbind
 ```
-+ Deconfigure samba and kerberos, by running the following as root:
+The last command must show the services as "inactive (dead)".
+If not, then troubleshooting is necessary before continuing.
+
+---
+### Deconfigure samba and kerberos
++ As root, run the following:
 ```
 CONFIGFILE=$(smbd -b |egrep CONFIGFILE |cut -f2- -d':' |sed 's/^ *//')
 rm "${CONFIGFILE}"
@@ -130,8 +151,8 @@ tinker panic 0
 #pool 3.debian.pool.ntp.org iburst
 pool ${NTP_SERVER1} iburst
 ```
-i.e.: Comment out the Debian pool servers, and add ${NTP_SERVER1}.
-Also: The "tinker panic 0" line must be the first line in ntp.conf.
+i.e.: Comment out the Debian pool servers, and add `${NTP_SERVER1}`.
+Also: The `tinker panic 0` line must be the first line in `ntp.conf`.
 + As root, run the following:
 ```
 systemctl restart ntp
@@ -160,6 +181,7 @@ reboot
 samba-tool domain provision --use-rfc2307 \
         --option="interfaces=lo ${INTERFACE_NAME}" \
         --option="bind interfaces only=yes" \
+        --option="winbind separator=/" \
         --interactive
 ```
 Interactive mode: Accept all the default answers, except for:
@@ -183,7 +205,10 @@ passwd:         compat winbind
 group:          compat winbind
 ```
 i.e.: add 'winbind' to the end of the 'passwd' and 'group' lines.
-+ As root, run this to unmask, enable and start the samba-ad-dc service:
+
+---
+### Start the samba-ad-dc service
++ As root, run the following:
 ```
 systemctl unmask samba-ad-dc
 systemctl enable samba-ad-dc
@@ -199,6 +224,8 @@ If not, then troubleshooting is necessary before continuing.
 ```
     samba-tool dns zonecreate localhost ${REV_DNS_ZONE} -UAdministrator
 ```
+Expect to see `Zone ... .in-addr.arpa created successfully`.
+Otherwise, troubleshooting is necessary before continuing.
 
 ---
 ### Add a PTR record for the DC to the reverse lookup zone
@@ -208,14 +235,8 @@ HOST_NUM=$(echo ${IP_ADDRESS} | cut -f4 -d.)
 samba-tool dns add localhost ${REV_DNS_ZONE} ${HOST_NUM} PTR \
         ${HOSTNAME}.${DOMAIN_FQDN}. -UAdministrator
 ```
-
----
-### Save a backup of the local idmap (for later, when adding DCs)
-+ As root, run the following:
-```
-PRIVATE_DIR=$(smbd -b |egrep PRIVATE_DIR |cut -f2- -d':' |sed 's/^ *//')
-tdbbackup -s .bak "${PRIVATE_DIR}/idmap.ldb"
-```
+Expect to see `Record added successfully`.
+Otherwise, troubleshoot and resolve before continuing.
 
 ---
 ### Test the correctness of ownerships/permissions on sysvol
@@ -223,10 +244,67 @@ tdbbackup -s .bak "${PRIVATE_DIR}/idmap.ldb"
 ```
 samba-tool ntacl sysvolcheck
 ```
-+ If sysvolcheck throws errors, then reset sysvol, as follows:
++ If sysvolcheck throws errors, then run the following, as root:
 ```
 samba-tool ntacl sysvolreset
 ```
+
+---
+### Test Winbind
++ As root, run the following:
+```
+wbinfo --ping-dc
+```
+Expect to see "dc connection ... succeeded".
++ As root, run the following:
+```
+wbinfo -u
+wbinfo -g
+```
+Expect to see lists of domain users and groups, not errors.
++ As root, run the following script:
+```
+getent passwd Administrator
+getent group "Domain Users"
+```
+Expect to see Administrator and "Domain Users" IDs.
+
+---
+### Save a backup of the local idmap (for later, when adding DCs)
++ As root, save the following into a script, then run the script:
+```
+#!/bin/bash
+set -eu
+echo "USERS:"
+samba-tool user list |
+while read u; do
+        if ! getent passwd "$u" >&/dev/null; then
+                getent passwd "BUILTIN/$u" || echo "NOT FOUND: $u"
+        else
+                getent passwd "$u" || echo "NOT FOUND: $u"
+        fi
+done
+echo "GROUPS:"
+samba-tool group list |
+while read g; do
+        if ! getent group "$g" >&/dev/null; then
+                getent group "BUILTIN/$g" || echo "NOT FOUND: $g"
+        else
+                getent group "$g" || echo "NOT FOUND: $g"
+        fi
+done
+```
+This script queries all users and groups, to ensure that all
+entities are allocated in the local idmap.
+If any users or groups are "NOT FOUND", then there is a problem
+that needs to be resolved before continuing.
++ As root, run the following:
+```
+PRIVATE_DIR=$(smbd -b |egrep PRIVATE_DIR |cut -f2- -d':' |sed 's/^ *//')
+tdbbackup -s .bak "${PRIVATE_DIR}/idmap.ldb"
+ls "${PRIVATE_DIR}/idmap.ldb.bak"
+```
+The last command should list the idmap backup file: `idmap.ldb.bak`.
 
 ---
 ### The remaining steps are only tests (no more config changes)
@@ -238,14 +316,15 @@ samba-tool ntacl sysvolreset
 kinit administrator
 klist
 ```
+Should return without error.
 
 ---
-### Test availability of the local 'sysvol' and 'netlogon' samba shares
+### Test availability of the local `sysvol` and `netlogon` samba shares
 + As root, run the following:
 ```
 smbclient -L localhost -U%
 ```
-Expect to see 'netlogon', 'sysvol', and 'IPC$' shares.
+Expect to see `netlogon`, `sysvol`, and `IPC$` shares.
 + As root, run the following:
 ```
 smbclient //localhost/netlogon -UAdministrator -c ls
@@ -274,26 +353,6 @@ host -t A ${DOMAIN_FQDN}.
 Expect to see the domain's NS and A records, not errors.
 
 ---
-### Test the Directory
-+ As root, run the following:
-```
-wbinfo --ping-dc
-```
-Expect to see "dc connection ... succeeded".
-+ As root, run the following:
-```
-wbinfo -u
-wbinfo -g
-```
-Expect to see lists of domain users and groups, not errors.
-+ As root, run the following:
-```
-getent passwd Administrator
-getent group "Domain Users"
-```
-Expect to see Administrator and "Domain Users" IDs.
-
----
 ### Show the FSMO roles
 + As root, run the following:
 ```
@@ -303,6 +362,4 @@ Expect to see 7 roles listed, all held by the new DC.
 
 ---
 ### Done
-+ Done.
-
 

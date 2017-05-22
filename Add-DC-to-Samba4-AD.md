@@ -1,9 +1,15 @@
 # How To Add A New Samba4 Domain Controller (DC) To An Existing Samba4 AD
-__Version:__ 1.1
+__Version:__ 2.0
 
-__Updated:__ May 20, 2017
+__Updated:__ May 22, 2017
 
 __Change Log:__
++ v.2.0, May 22, 2017:
+  - Updated "Configure local ... resolution" to add "hostname" cmd.
+  - Updated "Join this host ..." to add "winbind separator" option.
+  - Renamed "Test the Directory" to "Test Winbind".
+  - Moved "Test Winbind" to just after "Start the samba-ad-dc service".
+  - Added "Check that Directory Replication is working".
 + v.1.1, May 20, 2017:
   - Copied Add-DC-to-Samba4-AD.txt and reformatted in Markdown.
   - Numerous formatting and clarity tweaks. 
@@ -81,6 +87,10 @@ echo "${HOSTNAME}" >/etc/hostname
 ```
 ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 ```
++ As root, run the following:
+```
+hostname --file /etc/hostname
+```
 
 ---
 ### Install the necessary software packages
@@ -90,12 +100,21 @@ apt-get update
 apt-get install samba winbind ntp krb5-user dnsutils ldap-utils \
         ldb-tools smbclient libnss-winbind acl rsync
 ```
-+ Stop and disable the samba services, by running the following as root:
+
+---
+### Stop and disable the samba services
++ As root, run the following:
 ```
 systemctl stop    smbd nmbd winbind
 systemctl disable smbd nmbd winbind
+systemctl status  smbd nmbd winbind
 ```
-+ Deconfigure samba and kerberos, by running the following as root:
+The last command must show the services as "inactive (dead)".
+If not, then troubleshooting is necessary before continuing.
+
+---
+### Deconfigure samba and kerberos
++ As root, run the following:
 ```
 CONFIGFILE=$(smbd -b |egrep CONFIGFILE |cut -f2- -d':' |sed 's/^ *//')
 rm "${CONFIGFILE}"
@@ -217,7 +236,8 @@ DOMAIN=$(echo "${DOMAIN_FQDN}" | cut -f1 -d.)
 samba-tool domain join "${DOMAIN_FQDN}" DC -U${DOMAIN}\\Administrator \
         --dns-backend=SAMBA_INTERNAL \
         --option="interfaces=lo ${INTERFACE_NAME}" \
-        --option="bind interfaces only=yes"
+        --option="bind interfaces only=yes" \
+        --option="winbind separator=/"
 ```
 Expect to see `Joined domain ... as a DC`.
 + If this fails, troubleshooting is necessary before you can continue.
@@ -247,11 +267,11 @@ i.e.: add `winbind` to the end of the `passwd` and `group` lines.
 PRIVATE_DIR=$(smbd -b |egrep PRIVATE_DIR |cut -f2- -d':' |sed 's/^ *//')
 cd "${PRIVATE_DIR}"
 rsync -aAXHP ${DC1_HOSTNAME}:"${PRIVATE_DIR}/idmap.ldb.bak" ./
-cp idmap.ldb.bak idmap.ldb
+rsync -aAXHP idmap.ldb.bak idmap.ldb
 ```
 
 ---
-### Unmask, enable and start the `samba-ad-dc` service
+### Start the `samba-ad-dc` service
 + As root, run the following:
 ```
 systemctl unmask samba-ad-dc
@@ -263,15 +283,38 @@ The last command must show the service as `active (running)`.
 If not, then troubleshooting is necessary before continuing.
 
 ---
+### Test Winbind
++ As root, run the following:
+```
+wbinfo --ping-dc
+```
+Expect to see `dc connection ... succeeded`.
++ As root, run the following:
+```
+wbinfo -u
+wbinfo -g
+```
+Expect to see lists of domain users and groups, not errors.
++ As root, run the following:
+```
+getent passwd Administrator
+getent group "Domain Users"
+```
+Expect to see `Administrator` and `Domain Users` IDs.
+
+---
 ### Add the new DC to the DNS resolution config on all DCs in the domain
 + Edit `/etc/resolv.conf`, as per the following fragment:
 ```
 nameserver ${IP_ADDRESS}
 ```
-i.e.: Append a `nameserver` entry to the new DC's `/etc/resolv.conf`
+i.e.: Add a `nameserver` entry to the new DC's `/etc/resolv.conf`
 
-Also: Add a `nameserver` entry for the new DC to the `resolv.conf`
++ Add a `nameserver` entry for the new DC to the `resolv.conf`
 of all other DCs in the domain.
+
+Recommendation: Each DC should list itself as the __last__
+`nameserver` entry in its own `resolv.conf` file.
 
 ---
 ### Ensure that the new DC's `A` record exists in DNS
@@ -345,7 +388,7 @@ samba-tool ntacl sysvolcheck
 ssh ${DC1_HOSTNAME} samba-tool ntacl sysvolreset
 ```
 + If you needed to reset `sysvol`, then go back to the previous
-  step ("Copy the contents of the 'sysvol' share ...").
+  step ("Copy the contents of the `sysvol` share ...").
 
 ---
 ### The remainder of the steps are only tests (no more config changes)
@@ -385,27 +428,7 @@ host -t A ${DOMAIN_FQDN}. localhost
 Expect to see the domain's `NS` and `A` records, not errors.
 
 N.B.: The domain must have one `NS` record for every active DC;
-  there must also be one `A` record for every active DC.
-
----
-### Test the Directory
-+ As root, run the following:
-```
-wbinfo --ping-dc
-```
-Expect to see `dc connection ... succeeded`.
-+ As root, run the following:
-```
-wbinfo -u
-wbinfo -g
-```
-Expect to see lists of domain users and groups, not errors.
-+ As root, run the following:
-```
-getent passwd Administrator
-getent group "Domain Users"
-```
-Expect to see `Administrator` and `Domain Users` IDs.
+there must also be one `A` record for every active DC.
 
 ---
 ### Show the FSMO roles
@@ -416,6 +439,18 @@ samba-tool fsmo show
 Expect to see 7 roles listed. It is likely that the "master" DC
 holds all the roles, unless roles were transferred to other
 DCs by an administrator.
+
+---
+### Check that Directory Replication is working
++ As root, run the following:
+```
+samba-tool drs showrepl
+```
+Expect to see `INBOUND NEIGHBORS` with recent last attempts
+and no consecutive failures.
+
+The last line of output should likely be
+`Warning: No NC replicated for Connection!`, but that is expected.
 
 ---
 ### Done
