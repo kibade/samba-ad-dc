@@ -1,17 +1,17 @@
 # How To Add A New Samba4 Member Server To An Existing Samba4 AD
-__Version:__ 1.0 DRAFT
+__Version:__ 1.0
 
-__Updated:__ (NOT YET RELEASED)
+__Updated:__ May 26, 2017
 
 __Change Log:__
-+ v.1.0 DRAFT, NOT YET RELEASED:
-  - Work in progress.
++ v.1.0, released May 26,2017:
+  - Initial release.
 
 __References:__
 + https://wiki.samba.org/index.php/Setting_up_Samba_as_a_Domain_Member
 
 __Assumptions:__
-+ The new member server will be installed on Debian Stretch.
++ The new member server will be installed on Debian Jessie (or newer).
 + The new member server will be joining an existing Samba4 AD domain.
 + The new member server will have precisely one network interface (other than
 	 loopback) that is actively serving samba file shares.
@@ -34,15 +34,15 @@ IDMAP_RANGE             unique range of IDs for winbind idmap
 ```
 Example settings:
 ```
-INTERFACE_NAME		enp0s17
-IP_ADDRESS		172.16.0.1
-SUBNET_MASK		255.255.255.0
-GATEWAY			172.16.0.254
-DOMAIN_FQDN		testy.sd57.bc.ca
-HOSTNAME		fs1
-NTP_SERVER1		time.sd57.bc.ca
-DC1_ADDRESS		172.16.0.2
-DC1_HOSTNAME		dc1
+INTERFACE_NAME          eth0
+IP_ADDRESS              10.45.10.1
+SUBNET_MASK             255.255.254.0
+GATEWAY                 10.45.11.254
+DOMAIN_FQDN             sfg.ad.sd57.bc.ca
+HOSTNAME                fs1
+NTP_SERVER1             time.sd57.bc.ca
+DC1_ADDRESS             10.45.10.3
+DC1_HOSTNAME            dc1
 IDMAP_RANGE             100000-199999
 ```
 
@@ -77,6 +77,15 @@ echo "${HOSTNAME}" >/etc/hostname
 ```
 ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 ```
++ As root, run the following:
+```
+hostname --file /etc/hostname
+getent hosts "${HOSTNAME}"
+```
+Expect the output of `getent` to look as follows:
+```
+${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
+```
 
 ---
 ### Install the necessary software packages
@@ -86,6 +95,8 @@ apt-get update
 apt-get install samba winbind ntp krb5-user dnsutils ldap-utils \
         ldb-tools smbclient libnss-winbind acl rsync
 ```
+When/if asked questions related to kerberos domain/realm, simply accept
+the defaults, since kerberos will be reconfigured later, anyway.
 
 ---
 ### Stop and disable the samba services
@@ -93,7 +104,17 @@ apt-get install samba winbind ntp krb5-user dnsutils ldap-utils \
 ```
 systemctl stop    smbd nmbd winbind
 systemctl disable smbd nmbd winbind
+systemctl status  smbd nmbd winbind
 ```
+The last command must show the services as "inactive (dead)".
+If not, then troubleshooting is necessary before continuing.
++ As root, run the following:
+```
+ps -ax | egrep -i 'samba|smbd|nmbd|winbind'
+```
+Expect to see at most one line of output, probably for the `grep`
+process. If any samba processes are found running, they need to be
+stopped before continuing.
 
 ---
 ### Deconfigure samba and kerberos
@@ -144,6 +165,9 @@ domain ${DOMAIN_FQDN}
 search ${DOMAIN_FQDN}
 nameserver ${DC1_ADDRESS}
 ```
+The above config is merely the minimum requirement.
+If the domain to be joined has multiple DCs, then be certain that 
+`resolv.conf` has exactly one`nameserver` line for each DC.
 
 ---
 ### Reboot to make all modified settings active (especially the name changes)
@@ -156,8 +180,10 @@ reboot
 ### Configure samba
 + As root, run the following:
 ```
-DOMAIN=$(echo "${DOMAIN_FQDN}" | cut -f1 -d.)
 REALM=$(echo "${DOMAIN_FQDN}" | tr 'a-z' 'A-Z')
+DOMAIN=$(echo "${REALM}" | cut -f1 -d.)
+echo "${REALM}"
+echo "${DOMAIN}"
 ```
 + Edit __/etc/samba/smb.conf__ to read as follows:
 ```
@@ -188,12 +214,15 @@ REALM=$(echo "${DOMAIN_FQDN}" | tr 'a-z' 'A-Z')
         winbind nss info = template
         template shell = /bin/false
         template homedir = /home/%U
+        winbind separator = /
 
         # Enable extended ACLs globally
         vfs objects = acl_xattr
         map acl inherit = yes
         store dos attributes = yes
 ```
+Be certain to replace the placeholders `${DOMAIN}`, `${REALM}`,
+`${INTERFACE_NAME}`, and `${IDMAP_RANGE}` with their actual values.
 
 ---
 ### Configure kerberos
@@ -271,7 +300,7 @@ systemctl status winbind smbd nmbd
   If not, then troubleshooting is necessary before continuing.
 
 ---
-### Test the Directory
+### Test Winbind
 + As root, run the following:
 ```
 wbinfo --ping-dc
@@ -285,8 +314,8 @@ wbinfo -g
 Expect to see lists of domain users and groups, not errors.
 + As root, run the following:
 ```
-getent passwd Administrator
-getent group "Domain Users"
+getent passwd "${DOMAIN}/Administrator"
+getent group "${DOMAIN}/Domain Users"
 ```
 Expect to see `Administrator` and `Domain Users` IDs.
 
@@ -295,8 +324,8 @@ Expect to see `Administrator` and `Domain Users` IDs.
 + As root, run the following:
 ```
 DOMAIN=$(echo "${DOMAIN_FQDN}" | cut -f1 -d.)
-net rpc rights grant "${DOMAIN}\Domain Admins" \
-        SeDiskOperatorPrivilege -U "${DOMAIN}\administrator"
+net rpc rights grant "${DOMAIN}/Domain Admins" \
+        SeDiskOperatorPrivilege -U "${DOMAIN}/administrator"
 ```
 
 ### Done
