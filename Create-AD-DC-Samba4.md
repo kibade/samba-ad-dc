@@ -1,10 +1,14 @@
 # How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
+__Version:__ 2.1
 
-__Version:__ 2.0
-
-__Updated:__ May 22, 2017
+__Updated:__ May 26, 2017
 
 __Change Log:__
++ v.2.1, released May 26, 2017:
+  - Updated "Configure local host name resolution" to add a check.
+  - Updated "Install the necessary software ..." to advise accepting defaults.
+  - Updated "Stop and disable the samba services" to add a check.
+  - Updated "... parameter values ..." examples to use 10.Y.x.x/23 network.
 + v.2.0, released May 22, 2017:
   - Updated "Provision the ... domain" to add "winbind separator".
   - Updated "Configure local ... resolution" to add "hostname" cmd.
@@ -51,14 +55,14 @@ REV_DNS_ZONE            FQDN of the reverse DNS zone
 Example settings:
 ```
 INTERFACE_NAME          enp0s17
-IP_ADDRESS              172.16.0.2
-SUBNET_MASK             255.255.255.0
-GATEWAY                 172.16.0.1
-DOMAIN_FQDN             testy.sd57.bc.ca
+IP_ADDRESS              10.45.10.3
+SUBNET_MASK             255.255.254.0
+GATEWAY                 10.45.11.254
+DOMAIN_FQDN             sfg.ad.sd57.bc.ca
 HOSTNAME                dc1
 NTP_SERVER1             time.sd57.bc.ca
 DNS_FORWARDER           199.175.16.2
-REV_DNS_ZONE            0.16.172.in-addr.arpa
+REV_DNS_ZONE            10.45.10.in-addr.arpa
 ```
 
 ---
@@ -95,6 +99,11 @@ ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 + As root, run the following:
 ```
 hostname --file /etc/hostname
+getent hosts "${HOSTNAME}"
+```
+Expect the output of `getent` to look as follows:
+```
+${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 ```
 
 ---
@@ -105,6 +114,8 @@ apt-get update
 apt-get install samba winbind ntp krb5-user dnsutils ldap-utils \
         ldb-tools smbclient libnss-winbind acl rsync
 ```
+When/if asked questions related to kerberos domain/realm, simply accept
+the defaults, since kerberos will be reconfigured later, anyway.
 
 ---
 ### Stop and disable the samba services
@@ -116,6 +127,13 @@ systemctl status  smbd nmbd winbind
 ```
 The last command must show the services as "inactive (dead)".
 If not, then troubleshooting is necessary before continuing.
++ As root, run the following:
+```
+ps -ax | egrep -i 'samba|smbd|nmbd|winbind'
+```
+Expect to see at most one line of output, probably for the `grep`
+process. If any samba processes are found running, they need to be
+stopped before continuing.
 
 ---
 ### Deconfigure samba and kerberos
