@@ -1,9 +1,13 @@
 # How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
-__Version:__ 2.1
+__Version:__ 3.0
 
-__Updated:__ May 26, 2017
+__Updated:__ May 28, 2017
 
 __Change Log:__
++ v.3.0, released May 28, 2017:
+  - Changed the DNS backend from SAMBA_INTERNAL to BIND9_DLZ.
+  - Added DOMAIN, REALM, ADMIN_PASSWORD to "... paramater values ..." section.
+  - Several minor additions made (more tests), and some tests rearranged.
 + v.2.1, released May 26, 2017:
   - Updated "Configure local host name resolution" to add a check.
   - Updated "Install the necessary software ..." to advise accepting defaults.
@@ -47,6 +51,9 @@ IP_ADDRESS              static IP address
 SUBNET_MASK             network subnet mask
 GATEWAY                 network gateway address (default route)
 DOMAIN_FQDN             fully-qualified domain name
+DOMAIN                  short domain name, in ALL CAPS
+REALM                   same as ${DOMAIN_FQDN}, but in ALL CAPS
+ADMIN_PASSWORD          the Administrator password
 HOSTNAME                host name
 NTP_SERVER1             FQDN of NTP server to synch with
 DNS_FORWARDER           IP address of the DNS forwarder
@@ -59,6 +66,9 @@ IP_ADDRESS              10.45.10.3
 SUBNET_MASK             255.255.254.0
 GATEWAY                 10.45.11.254
 DOMAIN_FQDN             sfg.ad.sd57.bc.ca
+DOMAIN                  SFG
+REALM                   SFG.AD.SD57.BC.CA
+ADMIN_PASSWORD          secret!23
 HOSTNAME                dc1
 NTP_SERVER1             time.sd57.bc.ca
 DNS_FORWARDER           199.175.16.2
@@ -80,6 +90,8 @@ iface ${INTERFACE_NAME} inet static
     netmask ${SUBNET_MASK}
     gateway ${GATEWAY}
 ```
+Be certain to replace the placeholders `${INTERFACE_NAME}`, `${IP_ADDRESS}`,
+`${SUBNET_MASK}`, and `${GATEWAY}` with their actual values.
 + As root, run the following:
 ```
 ifup ${INTERFACE_NAME}
@@ -96,6 +108,8 @@ echo "${HOSTNAME}" >/etc/hostname
 ```
 ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 ```
+Be certain to replace the placeholders `${IP_ADDRESS}`, `${HOSTNAME}`,
+and `${DOMAIN_FQDN}` with their actual values.
 + As root, run the following:
 ```
 hostname --file /etc/hostname
@@ -112,24 +126,24 @@ ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 ```
 apt-get update
 apt-get install samba winbind ntp krb5-user dnsutils ldap-utils \
-        ldb-tools smbclient libnss-winbind acl rsync
+        ldb-tools smbclient libnss-winbind acl rsync bind9
 ```
 When/if asked questions related to kerberos domain/realm, simply accept
 the defaults, since kerberos will be reconfigured later, anyway.
 
 ---
-### Stop and disable the samba services
+### Stop and disable the samba and bind9 services
 + As root, run the following:
 ```
-systemctl stop    smbd nmbd winbind
-systemctl disable smbd nmbd winbind
-systemctl status  smbd nmbd winbind
+systemctl stop    smbd nmbd winbind bind9
+systemctl disable smbd nmbd winbind bind9
+systemctl status  smbd nmbd winbind bind9
 ```
-The last command must show the services as "inactive (dead)".
+The last command must show the services as `inactive (dead)`.
 If not, then troubleshooting is necessary before continuing.
 + As root, run the following:
 ```
-ps -ax | egrep -i 'samba|smbd|nmbd|winbind'
+ps -ax | egrep -i 'samba|smbd|nmbd|winbind|named'
 ```
 Expect to see at most one line of output, probably for the `grep`
 process. If any samba processes are found running, they need to be
@@ -170,10 +184,14 @@ tinker panic 0
 pool ${NTP_SERVER1} iburst
 ```
 i.e.: Comment out the Debian pool servers, and add `${NTP_SERVER1}`.
-Also: The `tinker panic 0` line must be the first line in `ntp.conf`.
+Be certain to replace the placeholder `${NTP_SERVER1}` with its actual value.
+
+The `tinker panic 0` line is only required if the machine is a VM,
+and, when included, it must be the first line in `/etc/ntp.conf`.
 + As root, run the following:
 ```
-systemctl restart ntp
+systemctl stop ntp
+systemctl start ntp
 ```
 
 ---
@@ -184,6 +202,8 @@ domain ${DOMAIN_FQDN}
 search ${DOMAIN_FQDN}
 nameserver ${IP_ADDRESS}
 ```
+Be certain to replace the placeholders `${DOMAIN_FQDN}` and `${IP_ADDRESS}`
+with their actual values.
 
 ---
 ### Reboot to make all modified settings active (especially the name changes)
@@ -202,9 +222,43 @@ samba-tool domain provision --use-rfc2307 \
         --option="winbind separator=/" \
         --interactive
 ```
-Interactive mode: Accept all the default answers, except for:
-- DNS forwarder: set to: ${DNS_FORWARDER}
-- Administrator password: "Let's Pick" with last letter repeated
+Interactive mode: questions and answers, as follows (be certain to replace
+the placeholders `${REALM}`, `${DOMAIN}`, and `${ADMIN_PASSWORD}` with
+their actual values):
+- Q.: Realm
+  - A.: ${REALM}
+- Q.: Domain
+  - A.: ${DOMAIN}
+- Q.: Server Role
+  - A.: dc
+- Q.: DNS backend
+  - A.: BIND9_DLZ
+- Q.: Administrator password
+  - A.: ${ADMIN_PASSWORD}
+
+---
+### Configure the BIND9_DLZ DNS backend
++ As root, run the following:
+```
+PRIVATE_DIR=$(smbd -b |egrep PRIVATE_DIR |cut -f2- -d':' |sed 's/^ *//')
+echo "${PRIVATE_DIR}"
+```
++ Append the following line to __/etc/bind/named.conf__:
+```
+include "${PRIVATE_DIR}/named.conf";
+```
+Be certain to replace the placeholder `${PRIVATE_DIR}` with its actual value.
++ Insert the following line into the `options {}` block within
+  __/etc/bind/named.conf.options__:
+```
+tkey-gssapi-keytab "${PRIVATE_DIR}/dns.keytab";
+```
+Be certain to replace the placeholder `${PRIVATE_DIR}` with its actual value.
++ As root, run the following:
+```
+named-checkconf
+```
+Expect to see no output. If errors are reported, fix them before continuing.
 
 ---
 ### Configure kerberos
@@ -225,7 +279,18 @@ group:          compat winbind
 i.e.: add 'winbind' to the end of the 'passwd' and 'group' lines.
 
 ---
-### Start the samba-ad-dc service
+### Start the `bind9` service
++ As root, run the following:
+```
+systemctl enable bind9
+systemctl start  bind9
+systemctl status bind9
+```
+The last command must show the service as `active (running)`.
+If not, then troubleshooting is necessary before continuing.
+
+---
+### Start the `samba-ad-dc` service
 + As root, run the following:
 ```
 systemctl unmask samba-ad-dc
@@ -233,14 +298,43 @@ systemctl enable samba-ad-dc
 systemctl start  samba-ad-dc
 systemctl status samba-ad-dc
 ```
-The last command must show the service as "active (running)".
+The last command must show the service as `active (running)`.
 If not, then troubleshooting is necessary before continuing.
 
 ---
-### Create the reverse DNS lookup zone
+### Test availability of kerberos
 + As root, run the following:
 ```
-    samba-tool dns zonecreate localhost ${REV_DNS_ZONE} -UAdministrator
+kinit administrator
+klist
+```
+Should return without error.
+
+---
+### Check the DNS zones
++ As root, run the following:
+```
+samba-tool dns zonelist localhost -UAdministrator
+```
+Expect to see three DNS zones listed (not necessarily in this order):
+```
+pszZoneName  : ${DOMAIN_FQDN}
+...
+pszZoneName  : ${REV_DNS_ZONE}
+...
+pszZoneName  : _msdcs.${DOMAIN_FQDN}
+```
+In Samba versions up to v.4.5.8, the domain provisioning tool fails to
+create the reverse DNS lookup zone `${REV_DNS_ZONE}`, which means that
+the above command may only show two DNS zones. The next step will remedy
+this problem.
+
+---
+### Create the reverse DNS lookup zone (if necessary)
++ If the previous step found the `${REV_DNS_ZONE}` was missing, then
+run following command as root:
+```
+samba-tool dns zonecreate localhost ${REV_DNS_ZONE} -UAdministrator
 ```
 Expect to see `Zone ... .in-addr.arpa created successfully`.
 Otherwise, troubleshooting is necessary before continuing.
@@ -265,27 +359,8 @@ samba-tool ntacl sysvolcheck
 + If sysvolcheck throws errors, then run the following, as root:
 ```
 samba-tool ntacl sysvolreset
+samba-tool ntacl sysvolcheck
 ```
-
----
-### Test Winbind
-+ As root, run the following:
-```
-wbinfo --ping-dc
-```
-Expect to see "dc connection ... succeeded".
-+ As root, run the following:
-```
-wbinfo -u
-wbinfo -g
-```
-Expect to see lists of domain users and groups, not errors.
-+ As root, run the following script:
-```
-getent passwd Administrator
-getent group "Domain Users"
-```
-Expect to see Administrator and "Domain Users" IDs.
 
 ---
 ### Save a backup of the local idmap (for later, when adding DCs)
@@ -328,13 +403,24 @@ The last command should list the idmap backup file: `idmap.ldb.bak`.
 ### The remaining steps are only tests (no more config changes)
 
 ---
-### Test availability of kerberos
+### Test Winbind
 + As root, run the following:
 ```
-kinit administrator
-klist
+wbinfo --ping-dc
 ```
-Should return without error.
+Expect to see "dc connection ... succeeded".
++ As root, run the following:
+```
+wbinfo -u
+wbinfo -g
+```
+Expect to see lists of domain users and groups, not errors.
++ As root, run the following script:
+```
+getent passwd Administrator
+getent group "Domain Users"
+```
+Expect to see `Administrator` and `Domain Users` IDs.
 
 ---
 ### Test availability of the local `sysvol` and `netlogon` samba shares
@@ -353,22 +439,29 @@ Should return without error.
 ### Test the local DNS service 
 + As root, run the following:
 ```
-host -t SRV _ldap._tcp.${DOMAIN_FQDN}.
-host -t SRV _kerberos._udp.${DOMAIN_FQDN}.
+host -t SRV _ldap._tcp.${DOMAIN_FQDN}. ${IP_ADDRESS}
+host -t SRV _kerberos._udp.${DOMAIN_FQDN}. ${IP_ADDRESS}
 ```
 Expect to see valid SRV records, not errors.
 + As root, run the following:
 ```
-host -t A ${HOSTNAME}.${DOMAIN_FQDN}.
-host ${IP_ADDRESS}
+host -t A ${HOSTNAME}.${DOMAIN_FQDN}. ${IP_ADDRESS}
+host ${IP_ADDRESS} ${IP_ADDRESS}
 ```
 Expect to see the DC's A and PTR records, not errors.
 + As root, run the following:
 ```
-host -t NS ${DOMAIN_FQDN}.
-host -t A ${DOMAIN_FQDN}.
+host -t NS ${DOMAIN_FQDN}. ${IP_ADDRESS}
+host -t A ${DOMAIN_FQDN}. ${IP_ADDRESS}
 ```
 Expect to see the domain's NS and A records, not errors.
++ As root, run the following:
+```
+host -t AXFR ${DOMAIN_FQDN}. ${IP_ADDRESS}
+host -t AXFR _msdcs.${DOMAIN_FQDN}. ${IP_ADDRESS}
+host -t AXFR ${REV_DNS_ZONE}. ${IP_ADDRESS}
+```
+Expect to see complete dumps (or "zone transfers") of the three DNS zones.
 
 ---
 ### Show the FSMO roles
