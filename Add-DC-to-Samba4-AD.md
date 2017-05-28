@@ -1,10 +1,10 @@
 # How To Add A New Samba4 Domain Controller (DC) To An Existing Samba4 AD
 __Version:__ 3.0
 
-__Updated:__ May 27, 2017
+__Updated:__ May 28, 2017
 
 __Change Log:__
-+ v.3.0, released May 27, 2017:
++ v.3.0, released May 28, 2017:
   - Changed the DNS backend from SAMBA_INTERNAL to BIND9_DLZ.
   - Added DOMAIN, REALM, ADMIN_PASSWORD to "... paramater values ..." section.
   - Several minor additions made (more tests), and some tests rearranged.
