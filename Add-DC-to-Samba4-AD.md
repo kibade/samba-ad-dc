@@ -426,6 +426,12 @@ If not, then troubleshooting is necessary before continuing.
 
 ---
 ### Check that Directory Replication is working
++ Immediately after joining the new DC, AD replication attempts will
+  begin. Naturally, the first few attempts will fail. The reason is that
+  all the DNS re-configurations (as documented above) need to be done
+  before replication can succeed. Replication attempts occur roughly
+  every 5 minutes, so wait at least 5 minutes after completing the
+  previous steps before continuing with this step.
 + As root, run the following:
 ```
 samba-tool drs showrepl
@@ -437,7 +443,6 @@ last attempts `@ NTTIME(0)` and no consecutive failures.
 The last line of output should likely be
 `Warning: No NC replicated for Connection!`, but that is expected.
 
-Replication attempts occur roughly every 5 minutes.
 ---
 ### Test Winbind
 + As root, run the following:
