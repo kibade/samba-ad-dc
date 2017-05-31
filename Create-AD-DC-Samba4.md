@@ -109,7 +109,7 @@ echo "${HOSTNAME}" >/etc/hostname
 ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 ```
 Be certain to replace the placeholders `${IP_ADDRESS}`, `${HOSTNAME}`,
-and `${DOMAIN_FQDN}` with their actual values.
+and `${DOMAIN_FQDN}` with their actual values. Ensure to remove the `127.0.1.1` entry for the host, while leaving the `127.0.0.1 localhost` entry intact. The above entry needs to be above ANYTHING ELSE that mentions the server's DNS name, otherwise provisioning the domain will have issues.
 + As root, run the following:
 ```
 hostname --file /etc/hostname
