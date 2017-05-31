@@ -1,11 +1,12 @@
 # How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
-__Version:__ 3.1
+__Version:__ 3.1.1
 
 __Updated:__ May 31, 2017
 
 __Change Log:__
-+ v.3.1. released May 31, 2017:
++ v.3.1.1 released May 31, 2017:
   - Added clarification & example to "Configure local host name resolution".
+  - Added clarifying text to "Provision the new AD domain".
 + v.3.0, released May 28, 2017:
   - Changed the DNS backend from SAMBA_INTERNAL to BIND9_DLZ.
   - Added DOMAIN, REALM, ADMIN_PASSWORD to "... paramater values ..." section.
@@ -238,6 +239,9 @@ samba-tool domain provision --use-rfc2307 \
         --option="winbind separator=/" \
         --interactive
 ```
+Be certain to replace the placeholder `${INTERFACE_NAME}` in the above
+command with its actual value.
+
 Interactive mode: questions and answers, as follows (be certain to replace
 the placeholders `${REALM}`, `${DOMAIN}`, and `${ADMIN_PASSWORD}` with
 their actual values):
