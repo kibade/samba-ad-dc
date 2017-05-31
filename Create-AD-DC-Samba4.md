@@ -244,6 +244,21 @@ their actual values):
 - Q.: Administrator password
   - A.: ${ADMIN_PASSWORD}
 
+Edit the smb.conf file to listen on the correct "interfaces", not just "lo"
+Example:-
+# Global parameters
+[global]
+        bind interfaces only = Yes
+        interfaces = lo enp0s3
+        netbios name = DEB02
+        realm = VALS.AD.SD57.BC.CA
+        workgroup = VALS
+        dns forwarder = 199.175.16.2
+        server role = active directory domain controller
+        winbind separator = /
+        idmap_ldb:use rfc2307 = yes
+        comment =
+
 ---
 ### Configure the BIND9_DLZ DNS backend
 + As root, run the following:
