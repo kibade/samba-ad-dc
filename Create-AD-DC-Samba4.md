@@ -110,6 +110,14 @@ ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 ```
 Be certain to replace the placeholders `${IP_ADDRESS}`, `${HOSTNAME}`,
 and `${DOMAIN_FQDN}` with their actual values. Ensure to remove the `127.0.1.1` entry for the host, while leaving the `127.0.0.1 localhost` entry intact. The above entry needs to be above ANYTHING ELSE that mentions the server's DNS name, otherwise provisioning the domain will have issues.
+Example:-
+  127.0.0.1       localhost
+  10.45.10.3     dc1.sfg.ad.sd57.bc.ca dc1
+  # The following lines are desirable for IPv6 capable hosts
+  ::1     localhost ip6-localhost ip6-loopback
+  ff02::1 ip6-allnodes
+  ff02::2 ip6-allrouters
+  
 + As root, run the following:
 ```
 hostname --file /etc/hostname
