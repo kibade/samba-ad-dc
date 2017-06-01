@@ -1,10 +1,12 @@
 # How To Add A New Samba4 Member Server To An Existing Samba4 AD
-__Version:__ 1.0
+__Version:__ 1.1
 
-__Updated:__ May 26, 2017
+__Updated:__ May 31, 2017
 
 __Change Log:__
-+ v.1.0, released May 26,2017:
++ v.1.1, released May 31, 2017:
+  - Added clarification & example to "Configure local host name resolution".
++ v.1.0, released May 26, 2017:
   - Initial release.
 
 __References:__
@@ -19,7 +21,7 @@ __Assumptions:__
 + The existing AD domain has a "master" DC with most/all of the FSMO roles.
 
 ---
-### Discover or choose parameter values for the new DC
+### Discover or choose parameter values for the new domain-member server
 ```
 INTERFACE_NAME          name of the network interface for samba
 IP_ADDRESS              static IP address
@@ -77,6 +79,21 @@ echo "${HOSTNAME}" >/etc/hostname
 ```
 ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 ```
+Be certain to replace the placeholders `${IP_ADDRESS}`, `${HOSTNAME}`,
+and `${DOMAIN_FQDN}` with their actual values.
+
+Be certain to remove the `127.0.1.1` entry for the host, if it exists,
+while leaving the `127.0.0.1 localhost` entry intact. The above entry
+needs to be the __only__ line that mentions the server's DNS name,
+otherwise local name resolution is ambiguous, which can cause problems
+for the domain-join process.
+
+Example __/etc/hosts__ file:
+```
+127.0.0.1       localhost
+10.45.10.3      dc1.sfg.ad.sd57.bc.ca   dc1
+...
+```
 + As root, run the following:
 ```
 hostname --file /etc/hostname
@@ -86,6 +103,7 @@ Expect the output of `getent` to look as follows:
 ```
 ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 ```
+i.e. the output should match the server's line in __/etc/hosts__.
 
 ---
 ### Install the necessary software packages
