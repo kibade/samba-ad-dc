@@ -84,8 +84,8 @@ The Policies to Apply
                      -   &lt;*SCHOOL CODE*&gt;.ad.sd57.bc.ca
                          -   Name: **School District \#57 (Prince George) - &lt;School Code&gt;**
                          -   User permissions: **User cannot change the name**
-                 -   System Services
-                     -   Windows Media Player Network Sharing Service = **Disabled**
+              -   System Services
+                  -   Windows Media Player Network Sharing Service = **Disabled**
   -   Administrative Templates
      -   Control Panel
          -   User Accounts
@@ -99,8 +99,8 @@ The Policies to Apply
                      -   Allow inbound remote administration exceptions = **Enabled, localsubnet**
              -   Offline Files
                  -   Allow or Disallow use of the Offline Files feature = **DISABLE**
-             -   Printers
-                 -   Allow Printers to be Published = **DISABLE**
+         -   Printers
+             -   Allow Printers to be Published = **DISABLE**
          -   System
              -   Logon
                  -   Show first sign-in animation = **Disable**
@@ -144,7 +144,7 @@ The Policies to Apply
                  -   Prevent the usage of OneDrive for file storage = **Enable**
                  -   Prevent the usage of OneDrive for file storage on Windows 8.1 = **Enable**
              -   Store (**Education only**)
-                 -   Turn off the Store application = **Enabled**
+                 -   Disable all apps from Windows Store = **Enabled**
              -   Sync your settings
                  -   Do not sync = **Enabled**
              -   Windows Anytime Upgrade
