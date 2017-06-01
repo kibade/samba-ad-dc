@@ -1,9 +1,12 @@
 # How To Add A New Samba4 Domain Controller (DC) To An Existing Samba4 AD
-__Version:__ 3.0
+__Version:__ 3.1.1
 
-__Updated:__ May 28, 2017
+__Updated:__ May 31, 2017
 
 __Change Log:__
++ v.3.1.1 released May 31, 2017:
+  - Added clarification & example to "Configure local host name resolution".
+  - Added clarifying text to "Join this host as a new DC ...".
 + v.3.0, released May 28, 2017:
   - Changed the DNS backend from SAMBA_INTERNAL to BIND9_DLZ.
   - Added DOMAIN, REALM, ADMIN_PASSWORD to "... paramater values ..." section.
@@ -107,6 +110,19 @@ ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 ```
 Be certain to replace the placeholders `${IP_ADDRESS}`, `${HOSTNAME}`,
 and `${DOMAIN_FQDN}` with their actual values.
+
+Be certain to remove the `127.0.1.1` entry for the host, if it exists,
+while leaving the `127.0.0.1 localhost` entry intact. The above entry
+needs to be the __only__ line that mentions the server's DNS name,
+otherwise local name resolution is ambiguous, which causes problems
+for the domain provisioning process.
+
+Example __/etc/hosts__ file:
+```
+127.0.0.1       localhost
+10.45.10.3      dc1.sfg.ad.sd57.bc.ca   dc1
+...
+```
 + As root, run the following:
 ```
 hostname --file /etc/hostname
@@ -116,6 +132,7 @@ Expect the output of `getent` to look as follows:
 ```
 ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 ```
+i.e. the output should match the server's line in __/etc/hosts__.
 
 ---
 ### Install the necessary software packages
@@ -282,6 +299,9 @@ samba-tool domain join "${DOMAIN_FQDN}" DC -U${DOMAIN}\\Administrator \
         --option="bind interfaces only=yes" \
         --option="winbind separator=/"
 ```
+Be certain to replace the placeholders `${DOMAIN_FQDN}`, `${DOMAIN}`, and
+`${INTERFACE_NAME}` with their actual values.
+
 Expect to see `Joined domain ... as a DC`.
 + If this fails, troubleshooting is necessary before you can continue.
 
