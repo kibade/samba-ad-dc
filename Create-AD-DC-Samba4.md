@@ -425,10 +425,8 @@ ls "${PRIVATE_DIR}/idmap.ldb.bak"
 The last command should list the idmap backup file: `idmap.ldb.bak`.
 
 ---
-Create the default OUs
----
+### Create the default OUs
 - Copy the text below into a new file on the Domain Controller:
-
 ```
 dn: OU=Staff,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
 changetype: add
@@ -466,10 +464,10 @@ objectClass: top
 objectClass: organizationalunit
 description: Staudent Users
 ```
-
 - Search and replace `SCHOOLCODE` with your DC's school code
 - Save the file as `/root/ous.txt`
-- Execute `ldbadd --url=/var/lib/samba/private/sam.ldb /root/ous.txt`. If no errors, then your OUs have been added successfully.
+- Execute `ldbadd --url=/var/lib/samba/private/sam.ldb /root/ous.txt`.
+  If no errors, then your OUs have been added successfully.
 
 ---
 ### The remaining steps are only tests (no more config changes)
