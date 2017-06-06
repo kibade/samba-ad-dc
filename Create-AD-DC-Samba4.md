@@ -1,9 +1,14 @@
 # How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
-__Version:__ 3.1.1
 
+__Version:__ 3.1.2  
+__Updated:__ June 5, 2017
+
+__Version:__ 3.1.1  
 __Updated:__ May 31, 2017
 
 __Change Log:__
++ v.3.1.2 released June 5, 2017:
+  - Added OU script creation (Student and Staff OUs)
 + v.3.1.1 released May 31, 2017:
   - Added clarification & example to "Configure local host name resolution".
   - Added clarifying text to "Provision the new AD domain".
@@ -418,6 +423,53 @@ tdbbackup -s .bak "${PRIVATE_DIR}/idmap.ldb"
 ls "${PRIVATE_DIR}/idmap.ldb.bak"
 ```
 The last command should list the idmap backup file: `idmap.ldb.bak`.
+
+---
+Create the default OUs
+---
+- Copy the text below into a new file on the Domain Controller:
+
+```
+dn: OU=Staff,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+description: Staff OU
+
+dn: OU=Staff_Computers,OU=Staff,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+description: Staff Computers
+
+dn: OU=Staff_Users,OU=Staff,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+description: Staff Users
+
+dn: OU=Student,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+description: Student OU
+
+dn: OU=Student_Computers,OU=Student,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+description: Student Computers
+
+dn: OU=Student_Users,OU=Student,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+description: Staudent Users
+```
+
+- Search and replace `SCHOOLCODE` with your DC's school code
+- Save the file as `/root/ous.txt`
+- Execute `ldbadd --url=/var/lib/samba/private/sam.ldb /root/ous.txt`. If no errors, then your OUs have been added successfully.
 
 ---
 ### The remaining steps are only tests (no more config changes)
