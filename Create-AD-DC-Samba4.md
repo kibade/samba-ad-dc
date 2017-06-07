@@ -1,12 +1,11 @@
 # How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
+__Version:__ 3.2
 
-__Version:__ 3.1.2  
-__Updated:__ June 5, 2017
-
-__Version:__ 3.1.1  
-__Updated:__ May 31, 2017
+__Updated:__ June 6, 2017
 
 __Change Log:__
++ v.3.2, released June 6, 2017:
+  - Added `ntlm auth = yes` to the smb.conf file ("Update the samba config").
 + v.3.1.2 released June 5, 2017:
   - Added OU script creation (Student and Staff OUs)
 + v.3.1.1 released May 31, 2017:
@@ -260,6 +259,18 @@ their actual values):
   - A.: BIND9_DLZ
 - Q.: Administrator password
   - A.: ${ADMIN_PASSWORD}
+
+---
+### Update the samba config file
++ Edit __/etc/samba/smb.conf__, to add the following lines to the `[global]`
+  section:
+```
+[global]
+...
+        # Allow NTLMv1 authentication, for MSCHAPv2 / FreeRADIUS compatibility
+        ntlm auth = yes
+...
+```
 
 ---
 ### Configure the BIND9_DLZ DNS backend
