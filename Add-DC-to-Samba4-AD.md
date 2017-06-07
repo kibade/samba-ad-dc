@@ -1,9 +1,11 @@
 # How To Add A New Samba4 Domain Controller (DC) To An Existing Samba4 AD
-__Version:__ 3.1.1
+__Version:__ 3.2
 
-__Updated:__ May 31, 2017
+__Updated:__ June 6, 2017
 
 __Change Log:__
++ v.3.2, released June 6, 2017:
+  - Added `ntlm auth` to "Add configuration to ... `smb.conf` ..."
 + v.3.1.1 released May 31, 2017:
   - Added clarification & example to "Configure local host name resolution".
   - Added clarifying text to "Join this host as a new DC ...".
@@ -308,8 +310,9 @@ Expect to see `Joined domain ... as a DC`.
 ---
 ### Add configuration to the new DC's `smb.conf`, to match the "master" DC
 + Copy the following configuration options from
-  `/etc/samba/smb.conf` on the existing DC to the new DC:
+  __/etc/samba/smb.conf__ on the existing DC to the new DC:
   - `idmap_ldb:use rfc2307`
+  - `ntlm auth`
 
 ---
 ### Configure the BIND9_DLZ DNS backend
