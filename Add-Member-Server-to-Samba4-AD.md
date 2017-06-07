@@ -337,6 +337,9 @@ getent group "${DOMAIN}/Domain Users"
 ```
 Expect to see `Administrator` and `Domain Users` IDs.
 
+Check to make sure you do not have a keytab file
++ As root, check if `/etc/krb5.keytab` exists. If so, delete it.
+
 ---
 ### Allow `Domain Admins` to configure share permissions
 + As root, run the following:
