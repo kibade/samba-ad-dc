@@ -51,22 +51,22 @@ exit
 Windows Enabler Method
 -
 - On first reboot
--   Let's start with region. Is this right? - **Canada**
--   Is this the right keyboard layout? - **US**
--   Want to add a second keyboard layout? - **Skip**
--   Educational Edition
-	-   Domain join instead
--   Who's going to use this PC? - **Xpr0file**
--   Password - SD57 Standard for your school
--	Password Hint - SD57 Standard for <SCHOOL>
--	Make Cortana your personal assistant? - **No**
--	Choose privacy settings for your device
-	-	Location: Off
-	-	Diagnostics: Basic
-	-	Relevant Ads: Off
-	-	Speech recognition: Off
-	-	Tailored experiences with diagnostic data: Off
--   Continue to Stage 2 - Initial Configuration, using this new account
+	-   Let's start with region. Is this right? - **Canada**
+	-   Is this the right keyboard layout? - **US**
+	-   Want to add a second keyboard layout? - **Skip**
+	-   Educational Edition
+		-   Domain join instead
+	-   Who's going to use this PC? - **Xpr0file**
+		-   Password - SD57 Standard for your school
+		-	Password Hint - SD57 Standard for <SCHOOL>
+	-	Make Cortana your personal assistant? - **No**
+	-	Choose privacy settings for your device
+		-	Location: Off
+		-	Diagnostics: Basic
+		-	Relevant Ads: Off
+		-	Speech recognition: Off
+		-	Tailored experiences with diagnostic data: Off
+	-   Continue to Stage 2 - Initial Configuration, using this new account
 
 SysPrep Method
 -
@@ -96,8 +96,7 @@ Stage 2 - Initial Configuration
     -   OK
     -   Remote (tab)
     -   Uncheck "Allow Remote Assistance connections to this computer"
-    -   Choose if you want Remote Desktop connections (default in
-        Windows is Off)
+    -   Choose if you want Remote Desktop connections (default in Windows is Off)
     -   OK to close the window.
 -   Disable automatic System Repair
 	-   This is to prevent users from interrupting startup, and gaining SYSTEM privileges
@@ -119,6 +118,12 @@ Stage 2 - Initial Configuration
     -   Remove Microsoft OneDrive
         -   **Windows**+**X**, **F**
         -   Remove Microsoft OneDrive
+	-   Remove un-usable apps
+		- Mail
+		- Other apps that REQUIRE a Microsoft Account
+	-   Set default programs
+		- PC Settings -> Apps -> Default Apps
+		- Web browser should be Internet Explorer, not Edge. Important for Administrator
     -   Taskbar Settings (Right-click Taskbar -&gt; Settings)
         -   Notification Area
             -   Select which icons appear on the taskbar
