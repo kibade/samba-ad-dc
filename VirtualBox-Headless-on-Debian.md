@@ -1,9 +1,11 @@
 # Installing VirtualBox for Headless Operation on a Debian Host
-__Version:__ 1.0
+__Version:__ 1.1
 
 __Updated:__ June 8, 2017
 
 __Change Log:__
++ v.1.1, released June 8, 2017:
+  - Added "Create VMs" and "Managing VMs" sections.
 + v.1.0, released June 8, 2017:
   - Initial release.
 
@@ -125,11 +127,43 @@ systemctl start virtualbox-guest-vms.service
 ```
 
 ---
+### Initial setup is done
+
+---
 ### Create VMs
 + VMs are created using the `vboxuser` account. There are example scripts
   for creating Windows and Debian VMs located on the DUCH main server,
   named __/home/vboxuser/*.sh__. Copy the scripts to the local `vboxuser`
   home directory, and edit files to taste.
 
----
-### Done
+### Managing VMs
++ VM management is done **exclusively** as the `vboxuser` user. Only in the
+  most dire circumstances should the `root` user be needed (typically to
+  force kill a VM process that refuses to stop, which should be very rare).
++ To open a shell running as the `vboxuser` user, run the following as root:
+```
+su -s /bin/bash - vboxuser
+```
+The remaining examples must be run as the `vboxuser`.
++ List all VMs:
+```
+vboxmanage list vms
+```
++ List all **running** VMs
+```
+vboxmanage list runningvms
+```
++ Tell a VM (named `my-vm`) to shut down gracefully:
+```
+vboxmanage controlvm "my-vm" acpipowerbutton
+```
+The above may not work in rare VMs that don't respond to ACPI powerbutton
+events (all recent Debian and Windows versions should).
++ Force poweroff a VM (named `my-vm`):
+```
+vboxmanage controlvm "my-vm" poweroff
+```
++ Start a VM (named `my-vm`):
+```
+nohup setsid vboxheadless --startvm "my-vm" </dev/null >&/dev/null
+```
