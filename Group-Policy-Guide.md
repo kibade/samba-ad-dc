@@ -149,6 +149,8 @@ The Policies to Apply
          -   Windows Components
              -   Add Features to Windows 10
                  -   Prevent the wizard from running = **Enabled**
+             -   App Runtime
+	         -   Allow Microsoft Accounts to be optional = **Enabled**
              -   AutoPlay Policies
 	             -   Turn off Autoplay = **Enabled, Turn off Autoplay on CD-ROM and removable media drives**
              -   Cloud Content
