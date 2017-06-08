@@ -108,10 +108,6 @@ VBOXAUTOSTART_DB=/etc/vbox/autostart.d
 VBOXAUTOSTART_CONFIG=/etc/vbox/autostart.cfg
 EOF2
 su -s /bin/bash - vboxuser
-```
-The last command above opens a new command-line shell running as `vboxuser`.
-+ As the `vboxuser` user, run the following commands:
-```
 vboxmanage setproperty autostartdbpath "/etc/vbox/autostart.d"
 exit
 ```
@@ -132,7 +128,8 @@ systemctl start virtualbox-guest-vms.service
 ### Create VMs
 + VMs are created using the `vboxuser` account. There are example scripts
   for creating Windows and Debian VMs located on the DUCH main server,
-  named __/home/vboxuser/*.sh__.
+  named __/home/vboxuser/*.sh__. Copy the scripts to the local `vboxuser`
+  home directory, and edit files to taste.
 
 ---
 ### Done
