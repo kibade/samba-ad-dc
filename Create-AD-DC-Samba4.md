@@ -479,6 +479,15 @@ description: Staudent Users
 - Save the file as `/root/ous.txt`
 - Execute `ldbadd --url=/var/lib/samba/private/sam.ldb /root/ous.txt`.
   If no errors, then your OUs have been added successfully.
+---
+### Create default Groups
++ As root, run the following:
+```
+samba-tool group add Staff
+samba-tool group add Students
+samba-tool group add Office
+samba-tool group add Yearbook
+```
 
 ---
 ### The remaining steps are only tests (no more config changes)
