@@ -130,12 +130,13 @@ systemctl start virtualbox-guest-vms.service
 ### Initial setup is done
 
 ---
-### Create VMs
+### Creating VMs
 + VMs are created using the `vboxuser` account. There are example scripts
   for creating Windows and Debian VMs located on the DUCH main server,
   named __/home/vboxuser/*.sh__. Copy the scripts to the local `vboxuser`
   home directory, and edit files to taste.
 
+---
 ### Managing VMs
 + VM management is done **exclusively** as the `vboxuser` user. Only in the
   most dire circumstances should the `root` user be needed (typically to
