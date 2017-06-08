@@ -181,7 +181,6 @@ The Policies to Apply
                  -   Prevent the usage of OneDrive for file storage = **Enable**
                  -   Prevent the usage of OneDrive for file storage on Windows 8.1 = **Enable**
              -   Store (**Education only**)
-	             -   Disable all apps from Windows Store = **Disabled**
                  -   Turn off the Store application = **Enabled**
              -   Sync your settings
                  -   Do not sync = **Enabled**
