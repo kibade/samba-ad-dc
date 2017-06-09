@@ -1,9 +1,11 @@
 # How To Add A New Samba4 Domain Controller (DC) To An Existing Samba4 AD
-__Version:__ 3.2
+__Version:__ 3.3
 
-__Updated:__ June 6, 2017
+__Updated:__ June 9, 2017
 
 __Change Log:__
++ v.3.3, released June 9, 2017:
+  - Added a recommendation to "Discover or choose parameter values...".
 + v.3.2, released June 6, 2017:
   - Added `ntlm auth` to "Add configuration to ... `smb.conf` ..."
 + v.3.1.1 released May 31, 2017:
@@ -68,7 +70,7 @@ GATEWAY                 10.45.11.254
 DOMAIN_FQDN             sfg.ad.sd57.bc.ca
 DOMAIN                  SFG
 REALM                   SFG.AD.SD57.BC.CA
-ADMIN_PASSWORD          secret!23
+ADMIN_PASSWORD          secRet!23
 HOSTNAME                dc2
 NTP_SERVER1             time.sd57.bc.ca
 DNS_FORWARDER           199.175.16.2
@@ -76,6 +78,33 @@ REV_DNS_ZONE            10.45.10.in-addr.arpa
 DC1_ADDRESS             10.45.10.3
 DC1_HOSTNAME            dc1
 ```
++ Recommendation: Copy the above list of settings into a script file, so that
+  the file can be conveniently "sourced" to define its variables in the
+  current shell session.  E.g.: Create a file named __/root/params.sh__ with
+  the following contents (using the example settings above):
+```
+INTERFACE_NAME="enp0s17"
+IP_ADDRESS="10.45.10.4"
+SUBNET_MASK="255.255.254.0"
+GATEWAY="10.45.11.254"
+DOMAIN_FQDN="sfg.ad.sd57.bc.ca"
+DOMAIN="SFG"
+REALM="SFG.AD.SD57.BC.CA"
+ADMIN_PASSWORD="secRet!23"
+HOSTNAME="dc2"
+NTP_SERVER1="time.sd57.bc.ca"
+DNS_FORWARDER="199.175.16.2"
+REV_DNS_ZONE="10.45.10.in-addr.arpa"
+DC1_ADDRESS="10.45.10.3"
+DC1_HOSTNAME="dc1"
+```
++ To "source" this file in your shell session, run the following command:
+```
+. /root/params.sh
+```
+Bear in mind that the variables will not survive the end of a shell session,
+so you will need to source __/root/params.sh__ every time you start a new
+session in which you intend to use those variables.
 
 ---
 ### Configure a static IP address
@@ -557,20 +586,20 @@ Should return without error.
 ### Test the local DNS service 
 + As root, run the following:
 ```
-host -t SRV _ldap._tcp.${DOMAIN_FQDN}. {IP_ADDRESS}
-host -t SRV _kerberos._udp.${DOMAIN_FQDN}. {IP_ADDRESS}
+host -t SRV _ldap._tcp.${DOMAIN_FQDN}. ${IP_ADDRESS}
+host -t SRV _kerberos._udp.${DOMAIN_FQDN}. ${IP_ADDRESS}
 ```
 Expect to see valid `SRV` records, not errors.
 + As root, run the following:
 ```
-host -t A ${HOSTNAME}.${DOMAIN_FQDN}. {IP_ADDRESS}
-host ${IP_ADDRESS} {IP_ADDRESS}
+host -t A ${HOSTNAME}.${DOMAIN_FQDN}. ${IP_ADDRESS}
+host ${IP_ADDRESS} ${IP_ADDRESS}
 ```
 Expect to see the DC's `A` and `PTR` records, not errors.
 + As root, run the following:
 ```
-host -t NS ${DOMAIN_FQDN}. {IP_ADDRESS}
-host -t A ${DOMAIN_FQDN}. {IP_ADDRESS}
+host -t NS ${DOMAIN_FQDN}. ${IP_ADDRESS}
+host -t A ${DOMAIN_FQDN}. ${IP_ADDRESS}
 ```
 Expect to see the domain's `NS` and `A` records, not errors.
 
