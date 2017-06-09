@@ -311,8 +311,8 @@ Expect to see `Joined domain ... as a DC`.
 ### Add configuration to the new DC's `smb.conf`, to match the "master" DC
 + Copy the following configuration options from
   __/etc/samba/smb.conf__ on the existing DC to the new DC:
-  - `idmap_ldb:use rfc2307`
-  - `ntlm auth = yes`
+  - `idmap_ldb:use rfc2307 = yes` (default)
+  - `ntlm auth = yes` (default)
 
 ---
 ### Configure the BIND9_DLZ DNS backend
