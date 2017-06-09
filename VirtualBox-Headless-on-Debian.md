@@ -1,9 +1,13 @@
 # Installing VirtualBox for Headless Operation on a Debian Host
-__Version:__ 1.1
+__Version:__ 1.2
 
 __Updated:__ June 8, 2017
 
 __Change Log:__
++ v.1.2, released June 8, 2017:
+  - Added "Ensure Debian is fully update" section.
+  - Added tests and clarification to "Install the VirtualBox Extension Pack".
+  - Added to "Creating VMs" and "Managing VMs" sections.
 + v.1.1, released June 8, 2017:
   - Added "Create VMs" and "Managing VMs" sections.
 + v.1.0, released June 8, 2017:
@@ -12,6 +16,14 @@ __Change Log:__
 __Assumptions:__
 + The Debian host is version 9.0 ("stretch") or newer.
 + The Debian host is running on bare metal (is **not** itself a VM).
+
+---
+### Ensure Debian is fully updated
++ As root, run the following:
+```
+apt-get update
+apt-get dist-upgrade
+```
 
 ---
 ### Configure the Debian host server's APT sources
@@ -79,6 +91,32 @@ vboxmanage extpack install Oracle_VM_VirtualBox_Extension_Pack-5.1.22-115126.vbo
 ```
 vboxmanage extpack install --replace Oracle_VM_VirtualBox_Extension_Pack-5.1.22-115126.vbox-extpack
 ```
++ In either case, you may be asked whether to accept a long license
+  agreement. Of course, you need to answer 'y'.
+
++ If the `extpack install` command throws errors about "kernel modules", then
+  it's possible you are running an out-of-date kernel. Try
+  `apt-get update && apt-get dist-upgrade && reboot` before continuing.
++ Check that the extpack installed correctly, by running this as root:
+```
+vboxmanage list extpacks
+```
+Expect to see information about the extpack.Expect **not** to see anything
+that looks like an error message (otherwise, something has gone wrong, and
+VirtualBox probably will not work until fixed).
+
+Example output:
+```
+Extension Packs: 1
+Pack no. 0:   Oracle VM VirtualBox Extension Pack
+Version:      5.1.22
+Revision:     115126
+Edition:      
+Description:  USB 2.0 and USB 3.0 Host Controller, Host Webcam, VirtualBox RDP, PXE ROM, Disk Encryption, NVMe.
+VRDE Module:  VBoxVRDP
+Usable:       true 
+Why unusable: 
+```
 
 ---
 ### Create the user `vboxuser`
@@ -87,7 +125,7 @@ vboxmanage extpack install --replace Oracle_VM_VirtualBox_Extension_Pack-5.1.22-
   running processes. As root, run the following:
 ```
 useradd --comment 'VirtualBox User' --home /home/vboxuser --groups vboxusers \
-	--shell /bin/false --create-home --user-group  vboxuser
+        --shell /bin/false --create-home --user-group  vboxuser
 su -s /bin/bash - vboxuser
 vboxmanage setproperty machinefolder "$HOME/VMs"
 exit
@@ -135,22 +173,28 @@ systemctl start virtualbox-guest-vms.service
   for creating Windows and Debian VMs located on the DUCH main server,
   named __/home/vboxuser/*.sh__. Copy the scripts to the local `vboxuser`
   home directory, and edit files to taste.
++ Reminder: To open a shell running as the `vboxuser` user, run the
+  following as root:
+```
+su -s /bin/bash - vboxuser
+```
 
 ---
 ### Managing VMs
 + VM management is done **exclusively** as the `vboxuser` user. Only in the
   most dire circumstances should the `root` user be needed (typically to
   force kill a VM process that refuses to stop, which should be very rare).
-+ To open a shell running as the `vboxuser` user, run the following as root:
++ Reminder: To open a shell running as the `vboxuser` user, run the
+  following as root:
 ```
 su -s /bin/bash - vboxuser
 ```
-The remaining examples must be run as the `vboxuser`.
+__The remaining examples must be run as the user `vboxuser`.__
 + List all VMs:
 ```
 vboxmanage list vms
 ```
-+ List all **running** VMs
++ List all **running** VMs:
 ```
 vboxmanage list runningvms
 ```
@@ -167,4 +211,8 @@ vboxmanage controlvm "my-vm" poweroff
 + Start a VM (named `my-vm`):
 ```
 nohup setsid vboxheadless --startvm "my-vm" </dev/null >&/dev/null
+```
++ Permanently delete a VM (named `my-vm`) and its virtual disk file(s):
+```
+vboxmanage unregistervm "my-vm" --delete
 ```
