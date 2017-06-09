@@ -1,9 +1,11 @@
 # How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
-__Version:__ 3.2
+__Version:__ 3.3
 
-__Updated:__ June 6, 2017
+__Updated:__ June 9, 2017
 
 __Change Log:__
++ v.3.3, released June 9, 2017:
+  - 
 + v.3.2, released June 6, 2017:
   - Added `ntlm auth = yes` to the smb.conf file ("Update the samba config").
 + v.3.1.2 released June 5, 2017:
@@ -81,6 +83,31 @@ NTP_SERVER1             time.sd57.bc.ca
 DNS_FORWARDER           199.175.16.2
 REV_DNS_ZONE            10.45.10.in-addr.arpa
 ```
++ Recommendation: Copy the above list of settings into a script file, so that
+  the file can be conveniently "sourced" to define its variables in the
+  current shell session.  E.g.: Create a file named __/root/params.sh__ with
+  the following contents (using the example settings above):
+```
+INTERFACE_NAME="enp0s17"
+IP_ADDRESS="10.45.10.3"
+SUBNET_MASK="255.255.254.0"
+GATEWAY="10.45.11.254"
+DOMAIN_FQDN="sfg.ad.sd57.bc.ca"
+DOMAIN="SFG"
+REALM="SFG.AD.SD57.BC.CA"
+ADMIN_PASSWORD="secRet!23"
+HOSTNAME="dc1"
+NTP_SERVER1="time.sd57.bc.ca"
+DNS_FORWARDER="199.175.16.2"
+REV_DNS_ZONE="10.45.10.in-addr.arpa"
+```
++ To "source" this file in your shell session, run the following command:
+```
+. /root/params.sh
+```
+Bear in mind that the variables will not survive the end of a shell session,
+so you will need to source __/root/params.sh__ every time you start a new
+session in which you intend to use those variables.
 
 ---
 ### Configure a static IP address
