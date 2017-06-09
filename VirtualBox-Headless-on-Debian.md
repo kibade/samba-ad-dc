@@ -1,9 +1,12 @@
 # Installing VirtualBox for Headless Operation on a Debian Host
-__Version:__ 1.2
+__Version:__ 1.3
 
 __Updated:__ June 8, 2017
 
 __Change Log:__
++ v.1.3, released June 8, 2017:
+  - Added explanation to "Install the `virtualbox-guest-vms` helper script".
+  - Did some minor rewording in a couple of paragraphs.
 + v.1.2, released June 8, 2017:
   - Added "Ensure Debian is fully update" section.
   - Added tests and clarification to "Install the VirtualBox Extension Pack".
@@ -101,7 +104,7 @@ vboxmanage extpack install --replace Oracle_VM_VirtualBox_Extension_Pack-5.1.22-
 ```
 vboxmanage list extpacks
 ```
-Expect to see information about the extpack.Expect **not** to see anything
+Expect to see information about the extpack. Expect **not** to see anything
 that looks like an error message (otherwise, something has gone wrong, and
 VirtualBox probably will not work until fixed).
 
@@ -111,7 +114,7 @@ Extension Packs: 1
 Pack no. 0:   Oracle VM VirtualBox Extension Pack
 Version:      5.1.22
 Revision:     115126
-Edition:      
+Edition:
 Description:  USB 2.0 and USB 3.0 Host Controller, Host Webcam, VirtualBox RDP, PXE ROM, Disk Encryption, NVMe.
 VRDE Module:  VBoxVRDP
 Usable:       true 
@@ -154,6 +157,12 @@ exit
 
 ---
 ### Install the `virtualbox-guest-vms` helper script
++ The `virtualbox-guest-vms` helper script is installed as a service that
+  runs at system bootup and shutdown time. The script attempts to ensure
+  that VMs are gracefully shut down when the host server shuts down.
+  For the script to work correctly, VMs must respond to "ACPI powerbutton"
+  events by shutting down gracefully. Recent versions of Debian and Windows
+  are capable.
 + As root, run the following:
 ```
 cd /etc/init.d/
@@ -169,10 +178,10 @@ systemctl start virtualbox-guest-vms.service
 
 ---
 ### Creating VMs
-+ VMs are created using the `vboxuser` account. There are example scripts
-  for creating Windows and Debian VMs located on the DUCH main server,
-  named __/home/vboxuser/*.sh__. Copy the scripts to the local `vboxuser`
-  home directory, and edit files to taste.
++ VMs are created **exclusively** using the `vboxuser` account. There are
+  example scripts for creating Windows and Debian VMs located on the HARW
+  main server, named __/home/vboxuser/*.sh__. Copy the scripts to the local
+  `vboxuser` home directory, and edit the files to taste.
 + Reminder: To open a shell running as the `vboxuser` user, run the
   following as root:
 ```
@@ -182,8 +191,9 @@ su -s /bin/bash - vboxuser
 ---
 ### Managing VMs
 + VM management is done **exclusively** as the `vboxuser` user. Only in the
-  most dire circumstances should the `root` user be needed (typically to
-  force kill a VM process that refuses to stop, which should be very rare).
+  most dire circumstances should the `root` user be needed to intervene
+  (typically to kill a VM process that refuses to terminate normally,
+  which should be a very rare occurrence).
 + Reminder: To open a shell running as the `vboxuser` user, run the
   following as root:
 ```
@@ -202,7 +212,7 @@ vboxmanage list runningvms
 ```
 vboxmanage controlvm "my-vm" acpipowerbutton
 ```
-The above may not work in rare VMs that don't respond to ACPI powerbutton
+The above may not work in rare VMs that don't respond to "ACPI powerbutton"
 events (all recent Debian and Windows versions should).
 + Force poweroff a VM (named `my-vm`):
 ```
@@ -216,3 +226,4 @@ nohup setsid vboxheadless --startvm "my-vm" </dev/null >&/dev/null
 ```
 vboxmanage unregistervm "my-vm" --delete
 ```
+
