@@ -312,7 +312,7 @@ Expect to see `Joined domain ... as a DC`.
 + Copy the following configuration options from
   __/etc/samba/smb.conf__ on the existing DC to the new DC:
   - `idmap_ldb:use rfc2307`
-  - `ntlm auth`
+  - `ntlm auth = yes`
 
 ---
 ### Configure the BIND9_DLZ DNS backend
