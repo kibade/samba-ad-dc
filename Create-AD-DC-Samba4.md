@@ -5,7 +5,7 @@ __Updated:__ June 9, 2017
 
 __Change Log:__
 + v.3.3, released June 9, 2017:
-  - 
+  - Added a recommendation to "Discover or choose parameter values...".
 + v.3.2, released June 6, 2017:
   - Added `ntlm auth = yes` to the smb.conf file ("Update the samba config").
 + v.3.1.2 released June 5, 2017:
