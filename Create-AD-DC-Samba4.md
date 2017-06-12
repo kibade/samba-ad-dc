@@ -1,9 +1,21 @@
-# How To Create a New Active Directory (AD) Domain Controller (DC) with Samba4
-__Version:__ 3.3
+# How To Create a New Active Directory (AD) Domain with Samba4
 
-__Updated:__ June 9, 2017
+__Summary:__
+This document describes a sequence of steps intended to create the **first**
+Directory Controller (DC) in a brand new Active Directory (AD) domain.
+
+If your intention is to create a new DC to add to an existing AD domain, then
+this document is **not the correct guide to follow**. Instead, you want
+`How to Add a New Samba4 Domain Controller (DC) To An Existing Samba4 AD`.
+
+__Version:__ 3.4
+
+__Updated:__ June 11, 2017
 
 __Change Log:__
++ v.3.4, released June 11, 2017:
+  - Changed the title slightly, as it seemed to be misleading.
+  - Added a Summary section, to reduce confusion about what this document is.
 + v.3.3, released June 9, 2017:
   - Added a recommendation to "Discover or choose parameter values...".
 + v.3.2, released June 6, 2017:
