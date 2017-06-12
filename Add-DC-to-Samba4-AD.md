@@ -1,9 +1,18 @@
 # How To Add A New Samba4 Domain Controller (DC) To An Existing Samba4 AD
-__Version:__ 3.3
 
-__Updated:__ June 9, 2017
+__Summary:__
+This document describes a sequence of steps intended to add a new Domain
+Controller (DC) to an existing Active Directory (AD) domain.
+
+__Version:__ 3.4
+
+__Updated:__ June 11, 2017
 
 __Change Log:__
++ v.3.4, released June 11., 2017:
+  - For ease of understanding, `smb.conf` is now copied from the "master" DC.
+  - Replaced "Test and repair DNS updates" with "Repair ... BIND9_DLZ ...".
+  - Added a Summary section, to reduce confusion about what this document is.
 + v.3.3, released June 9, 2017:
   - Added a recommendation to "Discover or choose parameter values...".
 + v.3.2, released June 6, 2017:
@@ -337,17 +346,17 @@ Expect to see `Joined domain ... as a DC`.
 + If this fails, troubleshooting is necessary before you can continue.
 
 ---
-### Add configuration to the new DC's `smb.conf`, to match the "master" DC
-+ Copy the following configuration options from
-  __/etc/samba/smb.conf__ on the existing DC to the new DC:
+### Copy the "master" DC's `smb.conf` to the new DC
++ It is necessary that all DCs in an AD domain have functionally
+  identical samba configuration. As root, run the following:
 ```
-[global]
-...
-        idmap_ldb:use rfc2307 = yes
-...
-        ntlm auth = yes
-...
+CONFIGFILE=$(smbd -b |egrep CONFIGFILE |cut -f2- -d':' |sed 's/^ *//')
+rsync -aP ${DC1_HOSTNAME}:"${CONFIGFILE}" "${CONFIGFILE}"
 ```
+
+Check whether there are any host-specific configuration options that need
+to be edited in the `smb.conf` file (perhaps `netbios name`). If so, make
+the necessary change(s).
 
 ---
 ### Configure the BIND9_DLZ DNS backend
@@ -445,19 +454,17 @@ samba-tool dns add ${DC1_ADDRESS} _msdcs.${DOMAIN_FQDN} ${GUID} \
 + Do not proceed until the `CNAME` record exists and is correct.
 
 ---
-### Test and repair DNS updates on the "master" DC
-+ As root, run the following __on the "master" DC__:
-```
-samba_dnsupdate --verbose --all-names
-```
-Expect to see a lot of output, but no error messages. If a lot of "NOTAUTH"
-messages appear, then the DNS backend needs to have its sanity restored, by
-running the following, as root (still __on the "master" DC__):
+### Repair the BIND9_DLZ DNS backend on the "master" DC
++ For some reason, the process of joining a new DC to the AD appears to
+  have the unwanted side-effect of messing up the BIND9_DLZ DNS backend
+  of the "master" DC. Fortunately, there is a simple command to fix that,
+  but it must be run __on the "master" DC__.
++ Therefore, as root, run the following __on the "master" DC__:
 ```
 samba_upgradedns --dns-backend=BIND9_DLZ
 systemctl restart bind9
 ```
-+ Don't forget to switch back to the new DC for the next step!
++ Don't forget to switch back to the new DC for the next steps!
 
 ---
 ### Start the `bind9` service
