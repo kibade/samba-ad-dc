@@ -8,11 +8,14 @@ If your intention is to create a new DC to add to an existing AD domain, then
 this document is **not the correct guide to follow**. Instead, you want
 `How to Add a New Samba4 Domain Controller (DC) To An Existing Samba4 AD`.
 
-__Version:__ 3.4
+__Version:__ 3.5
 
-__Updated:__ June 11, 2017
+__Updated:__ June 13, 2017
 
 __Change Log:__
++ v.3.5, released June 13, 2017:
+  - Removed the `DNS_FORWARDER` variable (not needed in BIND9_DLZ backend).
+  - Numerous cosmetic tweaks to formatting.
 + v.3.4, released June 11, 2017:
   - Changed the title slightly, as it seemed to be misleading.
   - Added a Summary section, to reduce confusion about what this document is.
@@ -77,7 +80,6 @@ REALM                   same as ${DOMAIN_FQDN}, but in ALL CAPS
 ADMIN_PASSWORD          the Administrator password
 HOSTNAME                host name
 NTP_SERVER1             FQDN of NTP server to synch with
-DNS_FORWARDER           IP address of the DNS forwarder
 REV_DNS_ZONE            FQDN of the reverse DNS zone
 ```
 Example settings:
@@ -89,14 +91,13 @@ GATEWAY                 10.45.11.254
 DOMAIN_FQDN             sfg.ad.sd57.bc.ca
 DOMAIN                  SFG
 REALM                   SFG.AD.SD57.BC.CA
-ADMIN_PASSWORD          secret!23
+ADMIN_PASSWORD          secRet!23
 HOSTNAME                dc1
 NTP_SERVER1             time.sd57.bc.ca
-DNS_FORWARDER           199.175.16.2
 REV_DNS_ZONE            10.45.10.in-addr.arpa
 ```
 + Recommendation: Copy the above list of settings into a script file, so that
-  the file can be conveniently "sourced" to define its variables in the
+  the file can be conveniently **"sourced"** to define its variables in the
   current shell session.  E.g.: Create a file named __/root/params.sh__ with
   the following contents (using the example settings above):
 ```
@@ -110,16 +111,15 @@ REALM="SFG.AD.SD57.BC.CA"
 ADMIN_PASSWORD="secRet!23"
 HOSTNAME="dc1"
 NTP_SERVER1="time.sd57.bc.ca"
-DNS_FORWARDER="199.175.16.2"
 REV_DNS_ZONE="10.45.10.in-addr.arpa"
 ```
-+ To "source" this file in your shell session, run the following command:
++ To **"source"** this file in your shell session, run the following command:
 ```
 . /root/params.sh
 ```
-Bear in mind that the variables will not survive the end of a shell session,
-so you will need to source __/root/params.sh__ every time you start a new
-session in which you intend to use those variables.
+Bear in mind that the variables will not survive beyond the end of a shell
+session, so you will need to source __/root/params.sh__ every time you start
+a new session in which you intend to use those variables.
 
 ---
 ### Configure a static IP address
@@ -159,7 +159,7 @@ and `${DOMAIN_FQDN}` with their actual values.
 
 Be certain to remove the `127.0.1.1` entry for the host, if it exists,
 while leaving the `127.0.0.1 localhost` entry intact. The above entry
-needs to be the __only__ line that mentions the server's DNS name,
+__must__ be the __only__ line that mentions the server's DNS name,
 otherwise local name resolution is ambiguous, which causes problems
 for the domain provisioning process.
 
@@ -205,8 +205,8 @@ If not, then troubleshooting is necessary before continuing.
 ```
 ps -ax | egrep -i 'samba|smbd|nmbd|winbind|named'
 ```
-Expect to see at most one line of output, probably for the `grep`
-process. If any samba processes are found running, they need to be
+Expect to see at most one line of output, specifically for the `grep`
+process. If any samba or bind processes are found running, they need to be
 stopped before continuing.
 
 ---
@@ -276,7 +276,8 @@ reboot
 ### Provision the new AD domain
 + As root, run the following:
 ```
-samba-tool domain provision --use-rfc2307 \
+samba-tool domain provision \
+        --use-rfc2307 \
         --option="interfaces=lo ${INTERFACE_NAME}" \
         --option="bind interfaces only=yes" \
         --option="winbind separator=/" \
@@ -351,7 +352,7 @@ ln -s "${PRIVATE_DIR}/krb5.conf"
 passwd:         compat winbind
 group:          compat winbind
 ```
-i.e.: add 'winbind' to the end of the 'passwd' and 'group' lines.
+i.e.: add `winbind` to the end of the `passwd:` and `group:` lines.
 
 ---
 ### Start the `bind9` service
@@ -391,7 +392,7 @@ Should return without error.
 ```
 samba-tool dns zonelist localhost -UAdministrator
 ```
-Expect to see three DNS zones listed (not necessarily in this order):
+Expect to see __three__ DNS zones listed (not necessarily in this order):
 ```
 pszZoneName  : ${DOMAIN_FQDN}
 ...
@@ -399,13 +400,13 @@ pszZoneName  : ${REV_DNS_ZONE}
 ...
 pszZoneName  : _msdcs.${DOMAIN_FQDN}
 ```
-In Samba versions up to v.4.5.8, the domain provisioning tool fails to
-create the reverse DNS lookup zone `${REV_DNS_ZONE}`, which means that
-the above command may only show two DNS zones. The next step will remedy
+In Samba versions up to (at least) v.4.5.8, the domain provisioning tool
+fails to create the reverse DNS lookup zone `${REV_DNS_ZONE}`, which means
+that the above command may only show two DNS zones. The next step will remedy
 this problem.
 
 ---
-### Create the reverse DNS lookup zone (if necessary)
+### Create the reverse DNS lookup zone __(if necessary)__
 + If the previous step found the `${REV_DNS_ZONE}` was missing, then
 run following command as root:
 ```
@@ -436,10 +437,12 @@ samba-tool ntacl sysvolcheck
 samba-tool ntacl sysvolreset
 samba-tool ntacl sysvolcheck
 ```
+Expect to see no errors from the latter command.
 
 ---
 ### Save a backup of the local idmap (for later, when adding DCs)
-+ As root, save the following into a script, then run the script:
++ As root, save the following into a script (e.g. named __ug-script.sh__),
+then run the script:
 ```
 #!/bin/bash
 set -eu
@@ -464,7 +467,7 @@ done
 ```
 This script queries all users and groups, to ensure that all
 entities are allocated in the local idmap.
-If any users or groups are "NOT FOUND", then there is a problem
+If any users or groups are reported `NOT FOUND`, then there is a problem
 that needs to be resolved before continuing.
 + As root, run the following:
 ```
@@ -472,11 +475,11 @@ PRIVATE_DIR=$(smbd -b |egrep PRIVATE_DIR |cut -f2- -d':' |sed 's/^ *//')
 tdbbackup -s .bak "${PRIVATE_DIR}/idmap.ldb"
 ls "${PRIVATE_DIR}/idmap.ldb.bak"
 ```
-The last command should list the idmap backup file: `idmap.ldb.bak`.
+The latter command should list the idmap backup file: `idmap.ldb.bak`.
 
 ---
 ### Create the default OUs
-- Copy the text below into a new file on the Domain Controller:
++ Copy the text below into a new file on the Domain Controller:
 ```
 dn: OU=Staff,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
 changetype: add
@@ -514,10 +517,14 @@ objectClass: top
 objectClass: organizationalunit
 description: Staudent Users
 ```
-- Search and replace `SCHOOLCODE` with your DC's school code
-- Save the file as `/root/ous.txt`
-- Execute `ldbadd --url=/var/lib/samba/private/sam.ldb /root/ous.txt`.
-  If no errors, then your OUs have been added successfully.
++ Search and replace `SCHOOLCODE` with your DC's school code.
++ Save the file as `/root/ous.txt`.
++ As root, run the following:
+```
+ldbadd --url=/var/lib/samba/private/sam.ldb /root/ous.txt
+```
+If no errors are reported, then your OUs have been added successfully.
+
 ---
 ### Create default Groups
 + As root, run the following:
@@ -537,7 +544,7 @@ samba-tool group add Yearbook
 ```
 wbinfo --ping-dc
 ```
-Expect to see "dc connection ... succeeded".
+Expect to see `dc connection ... succeeded`.
 + As root, run the following:
 ```
 wbinfo -u
