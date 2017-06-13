@@ -1,9 +1,11 @@
 # How To Add A New Samba4 Member Server To An Existing Samba4 AD
-__Version:__ 2.0
+__Version:__ 2.1
 
-__Updated:__ June 6, 2017
+__Updated:__ June 13, 2017
 
 __Change Log:__
++ v.2.1, released June 13, 2017:
+  - Added to "Troubleshooting Winbind", instructions for clearing cache.
 + v.2.0, released June 6, 2017:
   - Numerous minor tweaks and clarifications.
 + v.1.2, released June 6, 2017:
@@ -246,6 +248,7 @@ reboot
         template shell = /bin/false
         template homedir = /home/%U
         winbind separator = /
+        winbind cache time = 1
 
         # Enable extended ACLs globally
         vfs objects = acl_xattr
@@ -350,6 +353,14 @@ getent group "${DOMAIN}/Domain Users"
 Expect to see `Administrator` and `Domain Users` IDs.
 
 ---
+### Allow `Domain Admins` to configure share permissions
++ As root, run the following:
+```
+net rpc rights grant "${DOMAIN}/Domain Admins" \
+        SeDiskOperatorPrivilege -U "${DOMAIN}/administrator"
+```
+
+---
 ### Troubleshooting Winbind
 + If `winbind` tests are failing, check to make sure you do not have
   a "stray" kerberos `keytab` file. Such a file can cause `winbind`
@@ -359,15 +370,22 @@ Expect to see `Administrator` and `Domain Users` IDs.
   - As root, check whether __/etc/krb5.keytab__ exists. If so, delete it,
     and then run `systemctl restart winbind`.
 
----
-### Allow `Domain Admins` to configure share permissions
-+ As root, run the following:
++ When updating a user's group membership(s) in Active Directory, check
+  that the membership(s) are reflected correctly on the member server, as
+  follows:
 ```
-net rpc rights grant "${DOMAIN}/Domain Admins" \
-        SeDiskOperatorPrivilege -U "${DOMAIN}/administrator"
+watch id ${DOMAIN}/user.name
+```
+This command reruns the `id` command every 2 seconds.
+If group membership(s) are not reflected correctly after 10 to 15 seconds
+(at most), then you may need to forcibly clear the winbind cache as follows:
+```
+CACHEDIR=$(smbd -b |egrep CACHEDIR |cut -f2- -d':' |sed 's/^ *//')
+systemctl stop winbind
+rm "${CACHEDIR}/netsamlogon_cache.tdb"
+systemctl start winbind
 ```
 
 ---
 ### Done
-
 
