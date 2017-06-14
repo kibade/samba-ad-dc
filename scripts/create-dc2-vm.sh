@@ -31,9 +31,11 @@ vboxmanage createvm \
 vboxmanage modifyvm "$vm" \
 	--memory $ram_megabytes \
 	--cpus 2 \
+        --vram 12 \
 	--nic1 bridged \
 	--nictype1 virtio \
 	--bridgeadapter1 "$host_nic" \
+        --mouse usbtablet \
 	--audio none \
 	--vrde on \
 	--vrdeport $console_rdp_port \
@@ -62,6 +64,8 @@ echo
 echo "Creating the virtual disk image file..."
 echo
 
+# Example of using an LVM logical volume (/dev/vg0/vm_dc2)
+# as the disk medium:
 vboxmanage internalcommands createrawvmdk \
 	-filename "$disk_vdi" \
 	-rawdisk /dev/vg0/vm_dc2

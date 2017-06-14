@@ -30,10 +30,12 @@ vboxmanage createvm \
 
 vboxmanage modifyvm "$vm" \
 	--memory $ram_megabytes \
+        --vram 12 \
 	--cpus 2 \
 	--nic1 bridged \
 	--nictype1 virtio \
 	--bridgeadapter1 "$host_nic" \
+        --mouse usbtablet \
 	--audio none \
 	--vrde on \
 	--vrdeport $console_rdp_port \
