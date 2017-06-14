@@ -1,0 +1,35 @@
+dn: OU=Staff,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+description: Staff OU
+
+dn: OU=Staff_Computers,OU=Staff,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+description: Staff Computers
+
+dn: OU=Staff_Users,OU=Staff,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+description: Staff Users
+
+dn: OU=Student,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+description: Student OU
+
+dn: OU=Student_Computers,OU=Student,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+description: Student Computers
+
+dn: OU=Student_Users,OU=Student,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+description: Student Users
