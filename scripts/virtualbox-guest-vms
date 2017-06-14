@@ -1,0 +1,112 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          virtualbox-guest-vms
+# Required-Start:    $local_fs $network $named $remote_fs $syslog $time
+# Required-Stop:     $local_fs $network $named $remote_fs $syslog $time
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start/stop VirtualBox guest VMs
+# Description:       Starts and stops the VirtualBox guest VMs at system boot/shutdown.
+### END INIT INFO
+set -eu
+. /lib/lsb/init-functions
+
+vm_user="vboxuser"
+graceful_stop_max_wait=30
+
+script_name=`basename "$0"`
+
+usage_and_exit () {
+	echo "Usage: $0: {start|stop|status}"
+	exit 1
+}
+
+runas_vm_user () {
+	if [ "`whoami`" != "$vm_user" ]; then
+		su - "$vm_user" -s /bin/sh -c "$@"
+	else
+		eval "$@"
+	fi
+}
+
+pass_uuids () {
+	sed -e 's/^".*"  *//' -e 's/ *$//' | \
+		( egrep '^\{([[:alnum:]]+-)+[[:alnum:]]+\}' || true )
+}
+
+log_msg () {
+	logger -s -p daemon.notice -t "$script_name" -- "$@" || true
+}
+
+list_allvms () {
+	runas_vm_user "vboxmanage list vms" | pass_uuids
+}
+
+list_running_vms () {
+	runas_vm_user "vboxmanage list runningvms" | pass_uuids
+}
+
+start () {
+	# Do nothing, as VirtualBox has an Autostart mechanism for VMs.
+	:
+}
+
+stop () {
+	local shutdowns_sent=0
+	local total_wait=0
+	local running_vms=`list_running_vms`
+
+	[ -n "$running_vms" ] || return 0
+
+	for vm in $running_vms; do
+		runas_vm_user "vboxmanage controlvm $vm acpipowerbutton"
+		log_msg "VM $vm was sent an ACPIPowerButton event."
+		let shutdowns_sent=$shutdowns_sent+1
+	done
+
+	log_msg "Now waiting for $shutdowns_sent VM(s) to shut down gracefully ..."
+
+	while [ -n "$running_vms" ] && [ $total_wait -lt $graceful_stop_max_wait ]; do
+		sleep 5
+		let total_wait=$total_wait+5
+		running_vms=`list_running_vms`
+	done
+
+	log_msg "Waited $total_wait seconds for graceful VM shut down(s)."
+
+	for vm in `list_running_vms`; do
+		log_msg "VM $vm did not shut down gracefully within " \
+			"$graceful_stop_max_wait seconds."
+	done
+}
+
+status () {
+	local running_vms=`list_running_vms`
+
+	if [ -n "$running_vms" ]; then
+		echo "Running VM(s):"
+		echo "$running_vms"
+	else
+		echo "No VMs are running."
+	fi
+}
+
+[ $# -gt 0 ] || usage_and_exit
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	status)
+		status
+		;;
+	*)
+		usage_and_exit
+		;;
+esac
+
+exit 0
+

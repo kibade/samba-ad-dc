@@ -1,0 +1,12 @@
+[Unit]
+Description=Starts and stops the VirtualBox guest VMs at system boot/shutdown.
+After=local-fs.target remote-fs.target network.target nss-lookup.target time-sync.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/etc/init.d/virtualbox-guest-vms start
+ExecStop=/etc/init.d/virtualbox-guest-vms stop
+
+[Install]
+WantedBy=multi-user.target
