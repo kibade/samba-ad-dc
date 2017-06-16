@@ -211,7 +211,7 @@ __/etc/resolv.conf__ has exactly one`nameserver` line for each DC.
 ```
 ping -n -c3 ${DC1_HOSTNAME}
 ```
-+Expect to see three ping responses from the "master" DC.
+Expect to see three ping responses from the "master" DC.
 
 ---
 ### Reboot to make all modified settings active (especially the name changes)
