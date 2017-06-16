@@ -8,11 +8,13 @@ If your intention is to create a new DC to add to an existing AD domain, then
 this document is **not the correct guide to follow**. Instead, you want
 `How to Add a New Samba4 Domain Controller (DC) To An Existing Samba4 AD`.
 
-__Version:__ 3.5
+__Version:__ 3.6
 
-__Updated:__ June 13, 2017
+__Updated:__ June 16, 2017
 
 __Change Log:__
++ v.3.6, released June 16, 2017:
+  - Clarified DNS server IP to use in initial forest creation
 + v.3.5, released June 13, 2017:
   - Removed the `DNS_FORWARDER` variable (not needed in BIND9_DLZ backend).
   - Numerous cosmetic tweaks to formatting.
@@ -263,7 +265,7 @@ search ${DOMAIN_FQDN}
 nameserver ${IP_ADDRESS}
 ```
 Be certain to replace the placeholders `${DOMAIN_FQDN}` and `${IP_ADDRESS}`
-with their actual values.
+with their actual values. Just a reminder that `${IP_ADDRESS}` is the IP address of the domain controller you are currently setting up - not your DNS forwarder or your router's DNS server address.
 
 ---
 ### Reboot to make all modified settings active (especially the name changes)
