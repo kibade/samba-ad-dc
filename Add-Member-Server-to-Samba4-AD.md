@@ -1,9 +1,11 @@
 # How To Add A New Samba4 Member Server To An Existing Samba4 AD
-__Version:__ 2.1
+__Version:__ 3.0
 
-__Updated:__ June 13, 2017
+__Updated:__ June 16, 2017
 
 __Change Log:__
++ v.3.0, released June 16, 2017:
+  - Added DC1_TECHUSER parameter, and updated "Configure Kerberos" accordingly.
 + v.2.1, released June 13, 2017:
   - Added to "Troubleshooting Winbind", instructions for clearing cache.
 + v.2.0, released June 6, 2017:
@@ -40,6 +42,7 @@ HOSTNAME                host name
 NTP_SERVER1             FQDN of NTP server to synch with
 DC1_ADDRESS             IP address of the existing "master" DC
 DC1_HOSTNAME            host name of the existing "master" DC
+DC1_TECHUSER            user on the existing "master" DC, allowed to SSH
 IDMAP_RANGE             unique range of IDs for winbind idmap
 ```
 Example settings:
@@ -55,6 +58,7 @@ HOSTNAME                fs1
 NTP_SERVER1             time.sd57.bc.ca
 DC1_ADDRESS             10.45.10.3
 DC1_HOSTNAME            dc1
+DC1_TECHUSER            tech
 IDMAP_RANGE             100000-199999
 ```
 
@@ -264,7 +268,7 @@ Be certain to replace the placeholders `${DOMAIN}`, `${REALM}`,
 ```
 PRIVATE_DIR=$(smbd -b |egrep PRIVATE_DIR |cut -f2- -d':' |sed 's/^ *//')
 cd "${PRIVATE_DIR}"
-rsync -aP ${DC1_HOSTNAME}:"${PRIVATE_DIR}/krb5.conf" ./
+rsync -aP ${DC1_TECHUSER}@${DC1_HOSTNAME}:"${PRIVATE_DIR}/krb5.conf" ./
 cd /etc/
 ln -s "${PRIVATE_DIR}/krb5.conf"
 ```
