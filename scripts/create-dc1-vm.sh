@@ -39,6 +39,7 @@ vboxmanage modifyvm "$vm" \
 	--audio none \
 	--vrde on \
 	--vrdeport $console_rdp_port \
+        --vrdereusecon on \
 	--paravirtprovider kvm \
 	--rtcuseutc on \
 	--boot1 dvd \
