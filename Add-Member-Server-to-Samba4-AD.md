@@ -1,9 +1,23 @@
 # How To Add A New Samba4 Member Server To An Existing Samba4 AD
-__Version:__ 3.0
 
-__Updated:__ June 16, 2017
+__Summary:__
+This document describes a sequence of steps intended to join a linux server
+to an Active Directory (AD) domain.
+
+A linux server joined to an AD domain is referred to as a "domain-member
+server", or a "member server".
+
+Domain-member servers are typically used to serve file shares in an AD
+domain, since Directory Controllers are not recommended to fill that role.
+
+__Version:__ 3.1
+
+__Updated:__ June 17, 2017
 
 __Change Log:__
++ v.3.1, released June 17, 2017:
+  - Added Summary.
+  - Added a recommendation to "Discover or choose parameter values...".
 + v.3.0, released June 16, 2017:
   - Added DC1_TECHUSER parameter, and updated "Configure Kerberos" accordingly.
 + v.2.1, released June 13, 2017:
@@ -24,7 +38,7 @@ __Assumptions:__
 + The new member server will be installed on Debian Jessie (or newer).
 + The new member server will be joining an existing Samba4 AD domain.
 + The new member server will have precisely one network interface (other than
-	 loopback) that is actively serving samba file shares.
+  loopback) that is actively serving samba file shares.
 + The new member server will begin as a DHCP client on the network.
 + The existing AD domain has a "master" DC with most/all of the FSMO roles.
 
@@ -61,6 +75,32 @@ DC1_HOSTNAME            dc1
 DC1_TECHUSER            tech
 IDMAP_RANGE             100000-199999
 ```
++ Recommendation: Copy the above list of settings into a script file, so that
+  the file can be conveniently **"sourced"** to define its variables in the
+  current shell session.  E.g.: Create a file named __/root/params.sh__ with
+  the following contents (using the example settings above):
+```
+INTERFACE_NAME="eth0"
+IP_ADDRESS="10.45.10.1"
+SUBNET_MASK="255.255.254.0"
+GATEWAY="10.45.11.254"
+DOMAIN_FQDN="sfg.ad.sd57.bc.ca"
+DOMAIN="SFG"
+REALM="SFG.AD.SD57.BC.CA"
+HOSTNAME="fs1"
+NTP_SERVER1="time.sd57.bc.ca"
+DC1_ADDRESS="10.45.10.3"
+DC1_HOSTNAME="dc1"
+DC1_TECHUSER="tech"
+IDMAP_RANGE="100000-199999"
+```
++ To **"source"** this file in your shell session, run the following command:
+```
+. /root/params.sh
+```
+Bear in mind that the variables will not survive beyond the end of a shell
+session, so you will need to source __/root/params.sh__ every time you start
+a new session in which you intend to use those variables.
 
 ---
 ### Configure a static IP address
