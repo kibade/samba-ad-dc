@@ -8,11 +8,13 @@ If your intention is to create a new DC to add to an existing AD domain, then
 this document is **not the correct guide to follow**. Instead, you want
 `How to Add a New Samba4 Domain Controller (DC) To An Existing Samba4 AD`.
 
-__Version:__ 3.6
+__Version:__ 3.6.1
 
-__Updated:__ June 16, 2017
+__Updated:__ June 17, 2017
 
 __Change Log:__
++ v.3.6.1, released June 17, 2017:
+  - Fixed a typo in the OU-creation script.
 + v.3.6, released June 16, 2017:
   - Clarified DNS server IP to use in initial forest creation
 + v.3.5, released June 13, 2017:
@@ -265,7 +267,10 @@ search ${DOMAIN_FQDN}
 nameserver ${IP_ADDRESS}
 ```
 Be certain to replace the placeholders `${DOMAIN_FQDN}` and `${IP_ADDRESS}`
-with their actual values. Just a reminder that `${IP_ADDRESS}` is the IP address of the domain controller you are currently setting up - not your DNS forwarder or your router's DNS server address.
+with their actual values.
+Just a reminder that `${IP_ADDRESS}` is the IP address of the domain
+controller you are currently setting up---not your DNS forwarder or your
+router's DNS server address.
 
 ---
 ### Reboot to make all modified settings active (especially the name changes)
@@ -517,7 +522,7 @@ dn: OU=Student_Users,OU=Student,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
 changetype: add
 objectClass: top
 objectClass: organizationalunit
-description: Staudent Users
+description: Student Users
 ```
 + Search and replace `SCHOOLCODE` with your DC's school code.
 + Save the file as `/root/ous.txt`.
