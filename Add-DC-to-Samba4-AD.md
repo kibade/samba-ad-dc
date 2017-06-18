@@ -4,12 +4,14 @@ __Summary:__
 This document describes a sequence of steps intended to add a new Domain
 Controller (DC) to an existing Active Directory (AD) domain.
 
-__Version:__ 3.4
+__Version:__ 3.5
 
-__Updated:__ June 11, 2017
+__Updated:__ June 17, 2017
 
 __Change Log:__
-+ v.3.4, released June 11., 2017:
++ v.3.5, released June 17, 2017:
+  - Removed the `DNS_FORWARDER` variable (not needed in BIND9_DLZ backend).
++ v.3.4, released June 11, 2017:
   - For ease of understanding, `smb.conf` is now copied from the "master" DC.
   - Replaced "Test and repair DNS updates" with "Repair ... BIND9_DLZ ...".
   - Added a Summary section, to reduce confusion about what this document is.
