@@ -67,7 +67,6 @@ REALM                   same as ${DOMAIN_FQDN}, but in ALL CAPS
 ADMIN_PASSWORD          the Administrator password
 HOSTNAME                host name
 NTP_SERVER1             FQDN of NTP server to synch with
-DNS_FORWARDER           IP address of the DNS forwarder
 REV_DNS_ZONE            FQDN of the reverse DNS zone
 DC1_ADDRESS             IP address of the existing "master" DC
 DC1_HOSTNAME            host name of the existing "master" DC
@@ -84,7 +83,6 @@ REALM                   SFG.AD.SD57.BC.CA
 ADMIN_PASSWORD          secRet!23
 HOSTNAME                dc2
 NTP_SERVER1             time.sd57.bc.ca
-DNS_FORWARDER           199.175.16.2
 REV_DNS_ZONE            10.45.10.in-addr.arpa
 DC1_ADDRESS             10.45.10.3
 DC1_HOSTNAME            dc1
@@ -104,7 +102,6 @@ REALM="SFG.AD.SD57.BC.CA"
 ADMIN_PASSWORD="secRet!23"
 HOSTNAME="dc2"
 NTP_SERVER1="time.sd57.bc.ca"
-DNS_FORWARDER="199.175.16.2"
 REV_DNS_ZONE="10.45.10.in-addr.arpa"
 DC1_ADDRESS="10.45.10.3"
 DC1_HOSTNAME="dc1"
