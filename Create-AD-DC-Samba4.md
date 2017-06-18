@@ -8,11 +8,13 @@ If your intention is to create a new DC to add to an existing AD domain, then
 this document is **not the correct guide to follow**. Instead, you want
 `How to Add a New Samba4 Domain Controller (DC) To An Existing Samba4 AD`.
 
-__Version:__ 3.6.1
+__Version:__ 3.7
 
 __Updated:__ June 17, 2017
 
 __Change Log:__
++ v.3.7, released June 17, 2017:
+  - Updated "Add a PTR record for the DC ..." to check for PTR existence.
 + v.3.6.1, released June 17, 2017:
   - Fixed a typo in the OU-creation script.
 + v.3.6, released June 16, 2017:
@@ -423,14 +425,23 @@ Expect to see `Zone ... .in-addr.arpa created successfully`.
 Otherwise, troubleshooting is necessary before continuing.
 
 ---
-### Add a PTR record for the DC to the reverse lookup zone
-+ As root, run the following:
+### Add a PTR record for the DC to the reverse lookup zone (if necessary)
++ Check whether the necessary `PTR` record for the DC exists in DNS,
+  by running the following:
+```
+host ${IP_ADDRESS}
+```
+If you see an error message (`... not found: 3(NXDOMAIN)`), then the
+`PTR` record does not exist, and you need to create it.
++ To create the `PTR` record, run the following as root:
 ```
 HOST_NUM=$(echo ${IP_ADDRESS} | cut -f4 -d.)
 samba-tool dns add localhost ${REV_DNS_ZONE} ${HOST_NUM} PTR \
         ${HOSTNAME}.${DOMAIN_FQDN}. -UAdministrator
+host ${IP_ADDRESS}
 ```
-Expect to see `Record added successfully`.
+Expect `samba-tool` to report `Record added successfully`, and expect
+`host` to report `... domain name pointer ${HOSTNAME}.${DOMAIN_FQDN}.`
 Otherwise, troubleshoot and resolve before continuing.
 
 ---
