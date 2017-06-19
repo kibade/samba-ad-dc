@@ -43,6 +43,7 @@ VM Setup
 
 Create the DNS entries
 -
+- Choose only ONE of the methods below. You will be doubling your work if you do both. You've been told.
 - Using Windows RSAT tools:
 	- Open DNS Manager
 	- Navigate to `DNS\dc1\Forward Lookup Zones\<SCHOOLCODE>.ad.sd57.bc.ca` on the left side
@@ -57,7 +58,7 @@ Create the DNS entries
 		- FQDN for target host: `fog.SCHOOLCODE.ad.sd57.bc.ca` (adjust your SCHOOLCODE)
 		- [ ] Allow any authenticated user to update all DNS records with the same name
 		- **OK**
-- Using `samba-tool` on the Domain Controller
+- Using `samba-tool` on the Domain Controller:
 	- As root, execute the lines below, substituting you SCHOOLCODE and YY code as necessary:	
     
 ```
@@ -80,5 +81,15 @@ Create the DNS entries
     host 10.YY.10.2
 ```
 
-Add images to FOG
+Setting up FOG's configuration
 -
+1. Open your web browser of choice, and navigate to `fog/fog`
+2. Login using your FOG credentials (default is `password` if fresh install)
+3. Go to Fog Configuration (Wrench icon)
+4. Click on FOG Settings
+5. Click on Active Directory Defaults
+	1. FOG_AD_DEFAULT_DOMAINNAME = `SCHOOLCODE.ad.sd57.bc.ca`
+	2. FOG_AD_DEFAULT_OU = `OU=Student_Computers,OU-Students,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca`
+	3. FOG_AD_DEFAULT_USER = `SCHOOLCODE\Administrator`
+	4. FOG_AD_DEFAULT_PASSWORD = DOMAIN Administrator's Password
+	5. FOG_ENFORCE_HOST_CHANGES = Ticked
