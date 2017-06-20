@@ -20,6 +20,9 @@ VM Setup
 	- Add proxy settings (for `apt-cacher-ng`)
 	- Install as little as possible for package
 	- No RAID in the VM
+
+FOG Install
+-
 - Install required packages to prepare
 	- As root, execute `apt-get update && apt-get install ssh ca-certificates vim`
 	- Ensure you can SSH from your workstation before continuing
@@ -93,3 +96,6 @@ Setting up FOG's configuration
 	3. FOG_AD_DEFAULT_USER = `SCHOOLCODE\Administrator`
 	4. FOG_AD_DEFAULT_PASSWORD = DOMAIN Administrator's Password
 	5. FOG_ENFORCE_HOST_CHANGES = Ticked
+
+---
+You can now start creating images, collecting images, registering hosts, etc.
