@@ -7,17 +7,27 @@ set -eu
 
 vm="dc1"
 host_nic="eno1"
-boot_iso="$HOME/mini.iso"
+boot_iso="$HOME/stretch-mini-amd64.iso"
 ram_megabytes=1024
 disk_megabytes=20000
 console_rdp_port=5011
-autostart_delay_seconds=60
+autostart_delay_seconds=30
 
 ###############################################################################
 ### End of Config Variables
 ###############################################################################
 
-disk_vdi="$HOME/VMs/$vm/$vm.vdi"
+#
+# Function to generate a random MAC address that is both:
+# - a unicast address (LSB of first octet is 0)
+# - a Locally Administrated Address (2nd LSB of first octet is 1)
+#
+random_mac () {
+	local -a octets
+	octets=( $( hexdump -e '1/1 "%02x" 5/1 " %02x"' -n 6 /dev/urandom ) )
+	octets[0]=$( printf "%02x" $[ 0x${octets[0]} & 0xfe | 0x02 ] )
+	IFS=" " echo "${octets[*]}" | sed 's/ /:/g'
+}
 
 echo
 echo "Configuring the virtual machine..."
@@ -35,6 +45,7 @@ vboxmanage modifyvm "$vm" \
 	--nic1 bridged \
 	--nictype1 virtio \
 	--bridgeadapter1 "$host_nic" \
+	--macaddress1 "$(random_mac)" \
         --mouse usbtablet \
 	--audio none \
 	--vrde on \
@@ -65,16 +76,35 @@ echo
 echo "Creating the virtual disk image file..."
 echo
 
+# Create an image file to be the virtual disk.
+# Omit the "--variant fixed" option to make it grow dynamically.
+
+disk_file="$HOME/VMs/$vm/$vm.vdi"
+
 vboxmanage createmedium disk \
-	--filename "$disk_vdi" \
+	--filename "$disk_file" \
 	--size $disk_megabytes \
 	--variant fixed
+
+## Alternative: Use an LVM logical volume (LV) as the disk medium.
+## Requirements for the LV to work in this context:
+## - It must already exist.
+## - It must must be named "vg0/vm_$vm".
+## - It must be fully r/w accessible by vboxuser, which means there
+##   needs to be a ".rules" script in /etc/udev/rules.d/ for it.
+#
+#disk_file="$HOME/VMs/$vm/$vm.vmdk"
+#
+#vboxmanage internalcommands createrawvmdk \
+#	-filename "$disk_file" \
+#	-rawdisk "/dev/vg0/vm_$vm"
+
 
 vboxmanage storageattach "$vm" \
 	--storagectl SATA \
 	--port 1 \
 	--type hdd \
-	--medium "$disk_vdi"
+	--medium "$disk_file"
 
 echo
 echo "VM \"$vm\" created. Ready for first boot and OS install."

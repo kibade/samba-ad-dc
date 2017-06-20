@@ -1,0 +1,3 @@
+# /etc/udev/rules.d/99-virtualbox-lv.rules
+KERNEL=="dm-?*", SUBSYSTEM=="block", ENV{DM_NAME}=="vg0-vm_?*", OWNER="root", GROUP="vboxuser", MODE="0660"
+
