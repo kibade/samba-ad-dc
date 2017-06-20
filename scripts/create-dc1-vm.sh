@@ -26,7 +26,7 @@ random_mac () {
 	local -a octets
 	octets=( $( hexdump -e '1/1 "%02x" 5/1 " %02x"' -n 6 /dev/urandom ) )
 	octets[0]=$( printf "%02x" $[ 0x${octets[0]} & 0xfe | 0x02 ] )
-	IFS=" " echo "${octets[*]}" | sed 's/ /:/g'
+	echo "${octets[*]}" | sed 's/ //g'
 }
 
 echo
