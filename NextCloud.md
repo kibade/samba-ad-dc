@@ -1,87 +1,62 @@
-Modified for nextcloud install guide Linux Jessie Debian 8.2.0 amd 64
+NextCloud Installation Guide
+==
 
-**Server side:**
+Version 1.00 - Initial Document by Kiba D
 
-**Prerequisite**
+---
 
-**Setup sambaAD. **
+#Server side:
 
-**Add a user called admin**
+##Prerequisites
 
-**Join samba files system to the above AD.**
+- Setup Samba Domain
+- Add a user to the domain (i.e. "NextCloudAdmin")
+- Join Samba file server to the above AD
 
-**Login into server and run the following commands**
+##Login to the server console
 
-> apt-get update
->
-> apt-get install apache2 php7.0 mysql-server libapache2-mod-php7.0
-> php7.0-zip php7.0-iconv
->
-> apt-get install php7.0-gd php7.0-json php7.0-mysql php7.0-curl
-> php7.0-mbstring php5-ldap
->
-> Due to security changed on mysql/Mariadb, you can not just use root
-> during nextcloud install, you need to create a user ‘nextcloud’
->
-> mysql -u root
->
-> USE mysql;
->
-> \#\#skip the next line if you already have mysql with a root password.
->
-> UPDATE user SET password=PASSWORD('&lt;MYSQL PASSWORD&gt;') WHERE
-> User='root' AND Host = 'localhost';
->
-> CREATE USER 'nextcloud'@'localhost' IDENTIFIED BY 'Wibble';
->
-> GRANT ALL PRIVILEGES ON \*.\* to 'nextcloud’@’localhost’ WITH GRANT
-> OPTION;
->
-> FLUSH PRIVILEGES;
->
-> Make sure you add your root and nextcloud password into firstclass
-> repos. If you already have mysql, just make a note of the password you
-> already use, you will need it later.
+```
 
-1.  Download nextcloud
+    apt-get update
+    apt-get install apache2 php7.0 mysql-server libapache2-mod-php7.0 php7.0-zip php7.0-iconv php7.0-gd php7.0-json php7.0-mysql php7.0-curl php7.0-mbstring php5-ldap php7.0-dom
 
-    a.  [*https://nextcloud.com/install/*](https://nextcloud.com/install/)
+```
 
-    b.  unpack into /home/tech/nextcloud
+ Due to security changes on MySQL/MariaDB, you can not just use root
+ during the NextCloud install; you need to create a user `nextcloud`. In the following commands, replace `'MYSQL_PASSWORD'` with the password you are using for MySQL; replace `NCPASSWORD` with your NextCloud Admin Password.
 
-    c.  copy into /var/www/
+```
 
-        i.  cp -r nextcloud /var/www/
+    mysql -u root
+    USE mysql;
+    ##skip the next line if you already have mysql with a root password.
+    UPDATE user SET password=PASSWORD('MYSQL_PASSWORD') WHERE User='root' AND Host = 'localhost';
+    CREATE USER 'nextcloud'@'localhost' IDENTIFIED BY 'NCPASSWORD';
+    GRANT ALL PRIVILEGES ON *.* to 'nextcloud’@’localhost’ WITH GRANT OPTION;
+    FLUSH PRIVILEGES;
 
-    d.  vim /etc/apache2/sites-available/nextcloud.conf
+```
 
-    e.  Paste the following in nextcloud.conf
+ Make sure you add your root and NextCloud Admin password into your FirstClass repos. If you already have MySQL, just make a note of the password you already use, you will need it later.
 
-> Alias /nextcloud "/var/www/nextcloud/"
->
-> &lt;Directory /var/www/nextcloud/&gt;
->
-> Options +FollowSymlinks
->
-> AllowOverride All
->
-> Satisfy Any
->
-> &lt;IfModule mod\_dav.c&gt;
->
-> Dav off
->
-> &lt;/IfModule&gt;
->
-> SetEnv HOME /var/www/nextcloud
->
-> SetEnv HTTP\_HOME /var/www/nextcloud
->
-> Satisfy Any
->
-> &lt;/Directory&gt;
+1.  Download NextCloud
+    1.  [*https://nextcloud.com/install/*](https://nextcloud.com/install/)
+    2.  Unpack the installation file into `/var/www/nextcloud`
+    3.  Create and edit `/etc/apache2/sites-available/nextcloud.conf`. Paste the following:
+    >     Alias /nextcloud "/var/www/nextcloud/"
+    >     <Directory /var/www/nextcloud/>
+    >         Options +FollowSymlinks
+    >         AllowOverride All
+    >         Satisfy Any
+    >         <IfModule mod_dav.c>
+    >             Dav off
+    >         </IfModule>
+    >         SetEnv HOME /var/www/nextcloud
+    >         SetEnv HTTP_HOME /var/www/nextcloud
+    >         Satisfy Any
+    >     </Directory&gt;
 
-f.  Create symbolic link
+2.  Create symbolic link
 
     ln -s /etc/apache2/sites-available/nextcloud.conf
     /etc/apache2/sites-enabled/nextcloud.conf
