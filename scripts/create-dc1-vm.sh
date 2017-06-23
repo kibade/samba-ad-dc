@@ -8,26 +8,33 @@ set -eu
 vm="dc1"
 host_nic="eno1"
 boot_iso="$HOME/stretch-mini-amd64.iso"
-ram_megabytes=1024
+ram_megabytes=2048
 disk_megabytes=20000
 console_rdp_port=5011
-autostart_delay_seconds=30
+autostart_delay_seconds=60
 
 ###############################################################################
 ### End of Config Variables
 ###############################################################################
 
-#
-# Function to generate a random MAC address that is both:
-# - a unicast address (LSB of first octet is 0)
-# - a Locally Administrated Address (2nd LSB of first octet is 1)
-#
+##
+## Function to generate a random MAC address that is both:
+## - a unicast address (LSB of first octet is 0)
+## - a Locally Administrated Address (2nd LSB of first octet is 1)
+##
 random_mac () {
 	local -a octets
 	octets=( $( hexdump -e '1/1 "%02x" 5/1 " %02x"' -n 6 /dev/urandom ) )
 	octets[0]=$( printf "%02x" $[ 0x${octets[0]} & 0xfe | 0x02 ] )
 	echo "${octets[*]}" | sed 's/ //g'
 }
+
+##
+## One-time setup commands for the current user. They are shown here
+##   commented-out, since they should already have been run.
+##
+# vboxmanage setproperty machinefolder "$HOME/VMs"
+# vboxmanage setproperty autostartdbpath "/etc/vbox/autostart.d"
 
 echo
 echo "Configuring the virtual machine..."
@@ -76,8 +83,8 @@ echo
 echo "Creating the virtual disk image file..."
 echo
 
-# Create an image file to be the virtual disk.
-# Omit the "--variant fixed" option to make it grow dynamically.
+## Create a fixed-size image file to be the virtual disk.
+## Omit the "--variant fixed" option to make it grow dynamically.
 
 disk_file="$HOME/VMs/$vm/$vm.vdi"
 
