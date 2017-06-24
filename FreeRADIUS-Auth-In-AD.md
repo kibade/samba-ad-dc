@@ -6,7 +6,7 @@ to authenticate users against an Active Directory (AD) domain.
 
 __Version:__ 1.0
 
-__Updated:__ June 13, 2017
+__Updated:__ June 24, 2017
 
 __Change Log:__
 + v.1.0, released June 24, 2017:
