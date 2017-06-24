@@ -4,11 +4,14 @@ __Summary:__
 This document describes a sequence of steps intended to configure FreeRADIUS
 to authenticate users against an Active Directory (AD) domain.
 
-__Version:__ 0.3
+__Version:__ 1.0
 
 __Updated:__ June 13, 2017
 
 __Change Log:__
++ v.1.0, released June 24, 2017:
+  - Updated the "Get ready to block users ..." section for clarity.
+  - Tweaked the formatting of recent additions.
 + v.0.3, released June 13, 2017
   - Added how to block users
 + v.0.2, released June 13, 2017
@@ -67,8 +70,10 @@ Be certain to replace the placeholder `${DOMAIN}` with its actual value (e.g.
 
 ---
 ### Get ready to block users by Username
-+ As root, edit `/etc/freeradius/3.0/sites-enabled/default`. Search for the `post-auth` stanza (quite long). Add the following lines (replacing `ADDOMAINNAME` with your short domain name, such as `SFG`):
-
++ As root, edit __/etc/freeradius/3.0/sites-enabled/default__.
+  Search for the `post-auth` stanza (quite long).
+  Add the following lines (replacing `ADDOMAINNAME` with your
+  short domain name, such as `SFG`):
 ```
 if (User-Name !~ /ADDOMAINNAME\\\\/i) {
         update request {
@@ -82,11 +87,31 @@ if ((Group == "wifiblocked") ) {
         reject
 }
 ```
++ As root, run the following:
+```
+addgroup wifiblocked
+```
+This creates a local group named `wifiblocked`.
++ To add users to the `wifiblocked` group, run the following as root:
+```
+adduser ADDOMAINNAME/username wifiblocked
+```
+Expect to see (something) like the following:
+```
+Adding user `ADDOMAINNAME/username' to group `wifiblocked' ...
+Adding user ADDOMAINNAME/username to group wifiblocked
+Done.
+```
++ To remove users from the group, run the following as root:
+```
+deluser ADDOMAINNAME/username wifiblocked
+```
+Expect to see (something) like the following:
+```
+Removing user `ADDOMAINNAME/username' from group `wifiblocked' ...
+Done.
+```
 
-- Save the file.
-- Execute `addgroup wifiblocked` as root.
-- To add users to the group, type `adduser ADDOMAINNAME/username wifiblocked`. It should reply that it correctly added the user.
-- To remove users from the group, type `deluser ADDOMAINNAME/username wifiblocked`. It should reply that it correctly removed the user.
 ---
 ### Done
 
