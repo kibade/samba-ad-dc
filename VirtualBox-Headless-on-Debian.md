@@ -1,9 +1,14 @@
 # Installing VirtualBox for Headless Operation on a Debian Host
-__Version:__ 1.3
+__Version:__ 2.0
 
-__Updated:__ June 8, 2017
+__Updated:__ June 24, 2017
 
 __Change Log:__
++ v.2.0, released June 24, 2017:
+  - Added some Assumptions referring to hardware virtualization.
+  - Added "Install and Configure Time Service (NTP) to serve to VM guests".
+  - Updated "Creating VMs", telling where to find VM-creation scripts.
+  - Updated "Install the ... helper script", to ensure correct owner/perms.
 + v.1.3, released June 8, 2017:
   - Added explanation to "Install the `virtualbox-guest-vms` helper script".
   - Did some minor rewording in a couple of paragraphs.
@@ -19,6 +24,9 @@ __Change Log:__
 __Assumptions:__
 + The Debian host is version 9.0 ("stretch") or newer.
 + The Debian host is running on bare metal (is **not** itself a VM).
++ The Debian host's processor is capable of hardware virtualization.
++ The Debian host has all hardware virtualization features enabled in its
+  system/BIOS setup.
 
 ---
 ### Ensure Debian is fully updated
@@ -27,6 +35,7 @@ __Assumptions:__
 apt-get update
 apt-get dist-upgrade
 ```
+If the latter command upgraded the kernel, then reboot before continuing.
 
 ---
 ### Configure the Debian host server's APT sources
@@ -41,7 +50,7 @@ echo "deb http://download.virtualbox.org/virtualbox/debian stretch contrib" \
 + As root, run the following:
 ```
 apt-get install ca-certificates
-cd ~
+cd
 wget "https://www.virtualbox.org/download/oracle_vbox_2016.asc"
 gpg --import oracle_vbox_2016.asc
 gpg -o oracle_vbox_2016.gpg --export A2F683C52980AECF
@@ -68,8 +77,8 @@ virtualbox-5.1:
         500 http://download.virtualbox.org/virtualbox/debian stretch/contrib amd64 Packages
         100 /var/lib/dpkg/status
 ```
-Make note of the version of virtualbox-5.1 that is Installed. (In this example,
-the version is `5.1.22-115126`.)
+Make note of the version of `virtualbox-5.1` that is Installed. (In this
+example, the version is `5.1.22-115126`.)
 
 ---
 ### Install the VirtualBox Extension Pack
@@ -162,26 +171,108 @@ exit
   that VMs are gracefully shut down when the host server shuts down.
   For the script to work correctly, VMs must respond to "ACPI powerbutton"
   events by shutting down gracefully. Recent versions of Debian and Windows
-  are capable.
+  are capable of that when running as VMs.
 + As root, run the following:
 ```
 cd /etc/init.d/
 rsync -aP tech@duch.sd57.bc.ca:/etc/init.d/virtualbox-guest-vms ./
+chown root:root virtualbox-guest-vms
+chmod 0755 virtualbox-guest-vms
 cd /etc/systemd/system/
 rsync -aP tech@duch.sd57.bc.ca:/etc/systemd/system/virtualbox-guest-vms.service ./
+chown root:root virtualbox-guest-vms.service
+chmod 0644 virtualbox-guest-vms.service
 systemctl enable virtualbox-guest-vms.service
 systemctl start virtualbox-guest-vms.service
 ```
+Note that the `virtualbox-guest-vms` and `virtualbox-guest-vms.service` files
+can also be found in the __scripts__ subdirectory of this project's git repo.
+
+---
+### Install and Configure Time Service (NTP) to serve to VM guests
++ Virtual guests will require accurate time sources, and the VM host server
+  hosting those guests is one logical candidate to serve time to them.
++ Ideally, two or more physical hosts should be arranged into a "mesh"
+  or "clique" of time peer servers, and VM guests should list all such
+  servers in their own NTP client configurations.
++ Replace the entire content of __/etc/ntp.conf__ with the following:
+```
+##
+## Server control options
+##
+
+driftfile /var/lib/ntp/ntp.drift
+statsdir /var/log/ntpstats/
+
+statistics loopstats peerstats clockstats
+filegen loopstats  file loopstats  type day enable
+filegen peerstats  file peerstats  type day enable
+filegen clockstats file clockstats type day enable
+
+tos orphan 5
+
+##
+## Upstream time servers
+##
+
+server time.sd57.bc.ca iburst burst
+pool 0.pool.ntp.org iburst burst
+pool 1.pool.ntp.org iburst burst
+pool 2.pool.ntp.org iburst burst
+pool 3.pool.ntp.org iburst burst
+
+##
+## Access control lists
+##
+
+# Base case: Exchange time with all, but disallow configuration or peering.
+restrict default kod limited notrap nomodify noquery nopeer
+
+# To allow pool discovery, apply same rules as base case, but do allow peering.
+restrict source kod limited notrap nomodify noquery
+
+# Allow localhost full control over the time service.
+restrict 127.0.0.1
+restrict ::1
+
+##
+## Peers: Physical hosts running NTP to serve time.
+## Connect peers into a mesh (or clique), to improve time quality/stability.
+##
+
+peer ${PEER_1}
+restrict ${PEER_1} kod limited notrap nomodify noquery
+
+peer ${PEER_2}
+restrict ${PEER_2} kod limited notrap nomodify noquery
+
+...
+
+peer ${PEER_N}
+restrict ${PEER_N} kod limited notrap nomodify noquery
+```
+Replace the placeholders `${PEER_1}`, `${PEER_2}`, ..., `${PEER_N}` with
+either the IP addresses or the DNS names of the **physical** hosts on the LAN
+serving time to clients via NTP.
+
+Each such peer needs to list all other peers in its __/etc/ntp.conf__
+file, as demonstrated above, in order to create a mesh network between the
+entire clique of peers.
+
+DO NOT include VMs as peers. Only physical hosts should be made peers, since
+VMs are almost never stable timekeepers.
 
 ---
 ### Initial setup is done
 
 ---
 ### Creating VMs
-+ VMs are created **exclusively** using the `vboxuser` account. There are
-  example scripts for creating Windows and Debian VMs located on the HARW
-  main server, named __/home/vboxuser/*.sh__. Copy the scripts to the local
-  `vboxuser` home directory, and edit the files to taste.
++ VMs are created **exclusively** using the `vboxuser` account.
+  Example scripts for creating Windows and Debian VMs can be found in the 
+  __scripts__ subdirectory of this project's git repo. The scripts are named
+  __create-*-vm.sh__.
+  Copy the scripts to the local `vboxuser` home directory, and edit their
+  configuration variables, as necessary.
 + Reminder: To open a shell running as the `vboxuser` user, run the
   following as root:
 ```
@@ -222,7 +313,8 @@ vboxmanage controlvm "my-vm" poweroff
 ```
 nohup setsid vboxheadless --startvm "my-vm" </dev/null >&/dev/null
 ```
-+ Permanently delete a VM (named `my-vm`) and its virtual disk file(s):
++ Permanently delete a VM (named `my-vm`) and its virtual disk file(s)
+  (NOTE: there is no confirmation prompt; the VM is deleted immediately!):
 ```
 vboxmanage unregistervm "my-vm" --delete
 ```
