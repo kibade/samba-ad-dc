@@ -10,11 +10,13 @@ server", or a "member server".
 Domain-member servers are typically used to serve file shares in an AD
 domain, since Directory Controllers are not recommended to fill that role.
 
-__Version:__ 3.1
+__Version:__ 4.0
 
-__Updated:__ June 17, 2017
+__Updated:__ June 23, 2017
 
 __Change Log:__
++ v.4.0, released June 17, 2017:
+  - Updated "Configure time synch".
 + v.3.1, released June 17, 2017:
   - Added Summary.
   - Added a recommendation to "Discover or choose parameter values...".
@@ -212,26 +214,61 @@ find "${LOCKDIR}" "${STATEDIR}" "${CACHEDIR}" "${PRIVATE_DIR}" \
 
 ---
 ### Configure time synch
-+ Edit __/etc/ntp.conf__, as per the following fragment:
++ Replace the contents of __/etc/ntp.conf__ with the following:
 ```
+##
+## Server control options
+##
+
 tinker panic 0
-...     ...
-#pool 0.debian.pool.ntp.org iburst
-#pool 1.debian.pool.ntp.org iburst
-#pool 2.debian.pool.ntp.org iburst
-#pool 3.debian.pool.ntp.org iburst
-pool ${NTP_SERVER1} iburst
+
+driftfile /var/lib/ntp/ntp.drift
+statsdir /var/log/ntpstats/
+
+statistics loopstats peerstats clockstats
+filegen loopstats  file loopstats  type day enable
+filegen peerstats  file peerstats  type day enable
+filegen clockstats file clockstats type day enable
+
+tos orphan 5
+
+##
+## Upstream time servers
+##
+
+server ${NTP_SERVER1} iburst burst
+pool 0.pool.ntp.org iburst burst
+pool 1.pool.ntp.org iburst burst
+pool 2.pool.ntp.org iburst burst
+pool 3.pool.ntp.org iburst burst
+
+##
+## Access control lists
+##
+
+# Base case: Exchange time with all, but disallow configuration or peering.
+restrict default kod limited notrap nomodify noquery nopeer
+
+# To allow pool discovery, apply same rules as base case, but do allow peering.
+restrict source kod limited notrap nomodify noquery
+
+# Allow localhost full control over the time service.
+restrict 127.0.0.1
+restrict ::1
 ```
-i.e.: Comment out the Debian pool servers, and add `${NTP_SERVER1}`.
 Be certain to replace the placeholder `${NTP_SERVER1}` with its actual value.
 
-The `tinker panic 0` line is only required if the machine is a VM,
-and, when included, it must be the first line in `/etc/ntp.conf`.
+The `tinker panic 0` line is needed if and only if the machine is a VM.
+In a non-VM context, the `tinker panic 0` line should be removed.
+
 + As root, run the following:
 ```
 systemctl stop ntp
 systemctl start ntp
+systemctl status ntp
 ```
+The last line should report that `ntp` is `active (running)`. Otherwise, there
+is likely a typo in __/etc/ntp.conf__ that needs to be fixed.
 
 ---
 ### Re-configure DNS resolution
