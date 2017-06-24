@@ -4,11 +4,13 @@ __Summary:__
 This document describes a sequence of steps intended to add a new Domain
 Controller (DC) to an existing Active Directory (AD) domain.
 
-__Version:__ 3.5
+__Version:__ 4.0
 
-__Updated:__ June 17, 2017
+__Updated:__ June 23, 2017
 
 __Change Log:__
++ v.4.0, released June 23, 2017:
+  - Updated "Configure time synch" to provide AD-authenticated time synch.
 + v.3.5, released June 17, 2017:
   - Removed the `DNS_FORWARDER` variable (not needed in BIND9_DLZ backend).
 + v.3.4, released June 11, 2017:
@@ -59,6 +61,7 @@ __Assumptions:__
 ```
 INTERFACE_NAME          name of the network interface
 IP_ADDRESS              static IP address
+NET_ADDRESS             network address
 SUBNET_MASK             network subnet mask
 GATEWAY                 network gateway address (default route)
 DOMAIN_FQDN             fully-qualified domain name
@@ -75,6 +78,7 @@ Example settings:
 ```
 INTERFACE_NAME          enp0s17
 IP_ADDRESS              10.45.10.4
+NET_ADDRESS             10.45.10.0
 SUBNET_MASK             255.255.254.0
 GATEWAY                 10.45.11.254
 DOMAIN_FQDN             sfg.ad.sd57.bc.ca
@@ -94,6 +98,7 @@ DC1_HOSTNAME            dc1
 ```
 INTERFACE_NAME="enp0s17"
 IP_ADDRESS="10.45.10.4"
+NET_ADDRESS="10.45.10.0"
 SUBNET_MASK="255.255.254.0"
 GATEWAY="10.45.11.254"
 DOMAIN_FQDN="sfg.ad.sd57.bc.ca"
@@ -226,26 +231,71 @@ find "${LOCKDIR}" "${STATEDIR}" "${CACHEDIR}" "${PRIVATE_DIR}" \
 
 ---
 ### Configure time synch
-+ Edit __/etc/ntp.conf__, as per the following fragment:
++ As root, run the following:
 ```
-tinker panic 0
-...     ...
-#pool 0.debian.pool.ntp.org iburst
-#pool 1.debian.pool.ntp.org iburst
-#pool 2.debian.pool.ntp.org iburst
-#pool 3.debian.pool.ntp.org iburst
-pool ${NTP_SERVER1} iburst
+STATEDIR=$(smbd -b |egrep STATEDIR |cut -f2- -d':' |sed 's/^ *//')
+echo "${STATEDIR}"
 ```
-i.e.: Comment out the Debian pool servers, and add `${NTP_SERVER1}`.
-Be certain to replace the placeholder `${NTP_SERVER1}` with its actual value.
++ Replace the contents of __/etc/ntp.conf__ with the following:
+```
+##
+## Server control options
+##
 
-The `tinker panic 0` line is only required if the machine is a VM,
-and, when included, it must be the first line in `/etc/ntp.conf`.
+tinker panic 0
+
+driftfile /var/lib/ntp/ntp.drift
+statsdir /var/log/ntpstats/
+ntpsigndsocket ${STATEDIR}/ntp_signd/
+
+statistics loopstats peerstats clockstats
+filegen loopstats  file loopstats  type day enable
+filegen peerstats  file peerstats  type day enable
+filegen clockstats file clockstats type day enable
+
+tos orphan 5
+
+##
+## Upstream time servers
+##
+
+server ${NTP_SERVER1} iburst burst
+pool 0.pool.ntp.org iburst burst
+pool 1.pool.ntp.org iburst burst
+pool 2.pool.ntp.org iburst burst
+pool 3.pool.ntp.org iburst burst
+
+##
+## Access control lists
+##
+
+# Base case: Exchange time with all, but disallow configuration or peering.
+restrict default kod limited notrap nomodify noquery nopeer
+
+# To allow pool discovery, apply same rules as base case, but do allow peering.
+restrict source kod limited notrap nomodify noquery
+
+# Allow localhost full control over the time service.
+restrict 127.0.0.1
+restrict ::1
+
+# Provide AD signed time sync to the local LAN
+restrict ${NET_ADDRESS} mask ${SUBNET_MASK} kod limited notrap nomodify noquery nopeer mssntp
+```
+Be certain to replace the placeholders `${STATEDIR}`, `${NTP_SERVER1}`,
+`${NET_ADDRESS}`, and `${SUBNET_MASK}` with their actual values.
+
+The `tinker panic 0` line is needed if and only if the machine is a VM.
+In a non-VM context, the `tinker panic 0` line should be removed.
+
 + As root, run the following:
 ```
 systemctl stop ntp
 systemctl start ntp
+systemctl status ntp
 ```
+The last line should report that `ntp` is `active (running)`. Otherwise, there
+is likely a typo in __/etc/ntp.conf__ that needs to be fixed.
 
 ---
 ### Re-configure DNS resolution
@@ -487,6 +537,19 @@ systemctl status samba-ad-dc
 ```
 The last command must show the service as `active (running)`.
 If not, then troubleshooting is necessary before continuing.
+
+---
+### Enable authenticated time synch
++ As root, run the following:
+```
+STATEDIR=$(smbd -b |egrep STATEDIR |cut -f2- -d':' |sed 's/^ *//')
+chgrp ntp "${STATEDIR}/ntp_signd/"
+chmod g+rx "${STATEDIR}/ntp_signd/"
+systemctl stop ntp
+systemctl start ntp
+systemctl status ntp
+```
+The last line should report that `ntp` is `active (running)`.
 
 ---
 ### Check that Directory Replication is working
