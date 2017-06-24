@@ -1,9 +1,11 @@
 # Installing VirtualBox for Headless Operation on a Debian Host
-__Version:__ 2.0
+__Version:__ 2.1
 
 __Updated:__ June 24, 2017
 
 __Change Log:__
++ v.2.1, released June 24, 2017:
+  - Updated "Configure boot-time VM auto-starting", to make it clearer.
 + v.2.0, released June 24, 2017:
   - Added some Assumptions referring to hardware virtualization.
   - Added "Install and Configure Time Service (NTP) to serve to VM guests".
@@ -149,16 +151,23 @@ exit
 ```
 mkdir --parents --mode=1775 /etc/vbox/autostart.d
 chown root:vboxusers /etc/vbox/autostart.d
-cat > /etc/vbox/autostart.cfg << EOF1
+touch /etc/vbox/autostart.cfg
+touch /etc/default/virtualbox
+```
++ Enter the following text into __/etc/vbox/autostart.cfg__:
+```
 default_policy = deny
 vboxuser = {
   allow = true
 }
-EOF1
-cat > /etc/default/virtualbox << EOF2
+```
++ Enter the following text into __/etc/default/virtualbox__:
+```
 VBOXAUTOSTART_DB=/etc/vbox/autostart.d
 VBOXAUTOSTART_CONFIG=/etc/vbox/autostart.cfg
-EOF2
+```
++ As root, run the following:
+```
 su -s /bin/bash - vboxuser
 vboxmanage setproperty autostartdbpath "/etc/vbox/autostart.d"
 exit
