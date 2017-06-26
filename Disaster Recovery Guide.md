@@ -20,7 +20,7 @@ First off, **do not panic**. You have prepared for this moment, and you need to 
 
 The first real action you should be taking is to contact Ming and Morris at the board office to prepare the Homer backups for restoring. Let them know that you will contact them once you have your File Server (AKA your VBox Host) up and running - we don't care about the files yet, they will come later.
 
-From the Document Listing, follow the following steps in order:
+Referring to the documents listed below, follow the below steps in order:
 
 1. **Setup File Server** - Ensure you have a BASE Linux Install, with `rsync` and a text editor installed. Include the instructions for setting up DHCP, and hand out the District DNS servers to the clients.
 2. **Virtualbox Headless Setup** - We need to get the Virtualbox Hypervisor available.
