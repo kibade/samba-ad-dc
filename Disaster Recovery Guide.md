@@ -56,7 +56,7 @@ Referring to the documents listed below, follow the below steps in order:
 
 4. **Add DC to Samba4 AD** - This will get your replication going again. When following the document, remember to substitude `dc2` with `dc3` - Your DC2 is going to be your main Domain Controller, and this needs to also be **updated in the First Class School Repository**. When replication has started/is working, continue on.
 
-    DC3 will take the old DC1's IP address, which will likely be 10.YY.10.4. Update as necessary, but leave DC2's IP address as-is.
+    DC3 will take the old DC1's IP address, which will likely be 10.YY.10.3. Update as necessary, but leave DC2's IP address as-is.
 5. **Add Member Server to Samba4 AD** - This will get your VBox Host (aka FS1) connected as a computer, and then you can start restoring its backups from Homer (again, coordinate with Ming and/or Morris). When restoring, **do not import the `/etc/samba/smb.conf` file directly into your working setup**.
   
     You will need to open your **currently-running** `smb.conf` file in one window (i.e. Notepad++ on your tech laptop), then move over the shares from your backup `smb.conf` file. Use your human-intervention to ensure that the parameters line up with what need to be there for this server.
