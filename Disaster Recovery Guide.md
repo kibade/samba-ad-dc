@@ -52,7 +52,16 @@ Referring to the documents listed below, follow the below steps in order:
     ```
 
     8. Run through the **Checks** sections on the Create-AD-DC document.
-    9. Download and execute the following script: `wget https://github.com/smonaica/samba-ad-dc/blob/master/scripts/ug-dump.sh -O /root/ug-dump.sh`. This will list all the users and groups, and ensure the idmap is up to date. Run `tdbbackup -s .bak /var/lib/samba/private/idmap.ldb` to create `idmap.ldb.bak` *after* running the above script.
+    9. Run the following commands:
+    
+    ```
+
+        wget https://github.com/smonaica/samba-ad-dc/blob/master/scripts/ug-dump.sh -O /root/ug-dump.sh
+		chmod +x /root/ug-dump.sh
+		/root/ug-dump.sh
+		rm /var/lib/samba/private/idmap.ldb.bak
+        tdbbackup -s .bak /var/lib/samba/private/idmap.ldb
+    ```
 
 4. **Add DC to Samba4 AD** - This will get your replication going again. When following the document, remember to substitude `dc2` with `dc3` - Your DC2 is going to be your main Domain Controller, and this needs to also be **updated in the First Class School Repository**. When replication has started/is working, continue on.
 
@@ -62,4 +71,9 @@ Referring to the documents listed below, follow the below steps in order:
     You will need to open your **currently-running** `smb.conf` file in one window (i.e. Notepad++ on your tech laptop), then move over the shares from your backup `smb.conf` file. Use your human-intervention to ensure that the parameters line up with what need to be there for this server.
 
 6. **Creating Shares**. Your `/etc/samba/smb.conf` file should be updated and recreated. Since you had Morris/Ming copy your files from Homer already, the files should be available. Ensure the shared folders are in the correct location as per your `smb.conf` file. Before bring samba back online, run `testparm` to ensure there are no errors.
+
+    When coping files from your backup server, ensure you use `--relative --one-file-system --numeric-ids --acls --xattrs` within your `rsync` command to get the ACLs, permissions, attributes, etc back. You'll need to make sure you have the Backup Server's SSH Public Key installed on the File Server. An example command to run to restore `/usr/local/share`:
+
+    `rsync -aP --relative --one-file-system --numeric-ids --acls --xattrs \`
+    `/var/backups/SCHOOLCODE-backups/DATA/share fs1:/usr/local/`
 7. **FreeRADIUS Auth in AD** - Get your Guest Wi-Fi up and running.
