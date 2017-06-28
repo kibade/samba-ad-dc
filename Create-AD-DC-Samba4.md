@@ -8,11 +8,17 @@ If your intention is to create a new DC to add to an existing AD domain, then
 this document is **not the correct guide to follow**. Instead, you want
 `How to Add a New Samba4 Domain Controller (DC) To An Existing Samba4 AD`.
 
-__Version:__ 4.0
+__Version:__ 5.0
 
-__Updated:__ June 23, 2017
+__Updated:__ June 28, 2017
 
 __Change Log:__
++ v.5.0, released June 28, 2017:
+  - Removed all references to the reverse-lookup DNS zone and PTR records.
+    The reverse-DNS zone is not needed, and it can break disaster recovery.
+  - Switched the order of the "Start bind" and "Start samba" sections, as
+    it seems better to have samba up and running before bind.
+  - Numerous edits made to improve clarity.
 + v.4.0, released June 23, 2017:
   - Updated "Configure time synch" to provide AD-authenticated time synch.
 + v.3.7, released June 17, 2017:
@@ -89,11 +95,10 @@ REALM                   same as ${DOMAIN_FQDN}, but in ALL CAPS
 ADMIN_PASSWORD          the Administrator password
 HOSTNAME                host name
 NTP_SERVER1             FQDN of NTP server to synch with
-REV_DNS_ZONE            FQDN of the reverse DNS zone
 ```
 Example settings:
 ```
-INTERFACE_NAME          enp0s17
+INTERFACE_NAME          enp0s3
 IP_ADDRESS              10.45.10.3
 NET_ADDRESS             10.45.10.0
 SUBNET_MASK             255.255.254.0
@@ -104,14 +109,13 @@ REALM                   SFG.AD.SD57.BC.CA
 ADMIN_PASSWORD          secRet!23
 HOSTNAME                dc1
 NTP_SERVER1             time.sd57.bc.ca
-REV_DNS_ZONE            10.45.10.in-addr.arpa
 ```
 + Recommendation: Copy the above list of settings into a script file, so that
   the file can be conveniently **"sourced"** to define its variables in the
   current shell session.  E.g.: Create a file named __/root/params.sh__ with
   the following contents (using the example settings above):
 ```
-INTERFACE_NAME="enp0s17"
+INTERFACE_NAME="enp0s3"
 IP_ADDRESS="10.45.10.3"
 NET_ADDRESS="10.45.10.0"
 SUBNET_MASK="255.255.254.0"
@@ -122,7 +126,6 @@ REALM="SFG.AD.SD57.BC.CA"
 ADMIN_PASSWORD="secRet!23"
 HOSTNAME="dc1"
 NTP_SERVER1="time.sd57.bc.ca"
-REV_DNS_ZONE="10.45.10.in-addr.arpa"
 ```
 + To **"source"** this file in your shell session, run the following command:
 ```
@@ -133,8 +136,13 @@ session, so you will need to source __/root/params.sh__ every time you start
 a new session in which you intend to use those variables.
 
 ---
-### Configure a static IP address
-+ (N.B.: Do the following steps in a console, as the network will drop.)
+### Configure a static IP address __(if necessary)__
++ It is necessary to run a DC as a server with a static IP address.
++ Ideally, the server's IP address will be set to its static value when
+  the OS is installed.
++ If that is the case here, then immediately skip to the next section
+  ("Configure local hostname resolution").
++ N.B.: Do the steps for this section in a console, as the network will drop.
 + As root, run the following:
 ```
 ifdown ${INTERFACE_NAME}
@@ -152,12 +160,33 @@ Be certain to replace the placeholders `${INTERFACE_NAME}`, `${IP_ADDRESS}`,
 + As root, run the following:
 ```
 ifup ${INTERFACE_NAME}
+ip addr show ${INTERFACE_NAME}
 ```
+Expect `ip addr` to show that the interface is in the UP state.
+Otherwise, do not proceed until it is so.
 
 ---
 ### Configure local host name resolution
-+ (From here on, it is okay to continue in an SSH session.)
-+ As root, run the following:
++ From here on, it is okay to continue work in an SSH session.
++ Local host name resolution must resolve the server's names to a real
+  IP address that is not in the `127.0.0.0/8` range.
++ If the server was configured with a static IP address when the OS
+  was installed, then it is likely that the configuration is already done.
++ To check, run the following:
+```
+getent hosts ${HOSTNAME}
+```
+The output should be exactly one line, arranged as follows:
+```
+${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
+```
+That is, local host name resolution should resolve the server's
+hostname and fqdn to its NIC's IP address, and not to a `127.0.0.0/8`
+address.
++ If the above check revealed that the server's hostname and fqdn
+  resolve to its NIC's static IP address, then immediately skip to
+  the next section ("Install the necessary software packages").
++ Otherwise, run the following, as root:
 ```
 echo "${HOSTNAME}" >/etc/hostname
 ```
@@ -168,7 +197,7 @@ ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 Be certain to replace the placeholders `${IP_ADDRESS}`, `${HOSTNAME}`,
 and `${DOMAIN_FQDN}` with their actual values.
 
-Be certain to remove the `127.0.1.1` entry for the host, if it exists,
+Be certain to remove the `127.x.x.x` line for the host, if it exists,
 while leaving the `127.0.0.1 localhost` entry intact. The above entry
 __must__ be the __only__ line that mentions the server's DNS name,
 otherwise local name resolution is ambiguous, which causes problems
@@ -190,6 +219,11 @@ Expect the output of `getent` to look as follows:
 ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 ```
 i.e. the output should match the server's line in __/etc/hosts__.
++ Finally, since the server's host name configuration has (possibly)
+  changed, reboot the server now. As root, run the following command:
+```
+reboot
+```
 
 ---
 ### Install the necessary software packages
@@ -249,7 +283,7 @@ find "${LOCKDIR}" "${STATEDIR}" "${CACHEDIR}" "${PRIVATE_DIR}" \
 STATEDIR=$(smbd -b |egrep STATEDIR |cut -f2- -d':' |sed 's/^ *//')
 echo "${STATEDIR}"
 ```
-+ Replace the contents of __/etc/ntp.conf__ with the following:
++ Replace the entire contents of __/etc/ntp.conf__ with the following:
 ```
 ##
 ## Server control options
@@ -298,7 +332,7 @@ restrict ${NET_ADDRESS} mask ${SUBNET_MASK} kod limited notrap nomodify noquery 
 Be certain to replace the placeholders `${STATEDIR}`, `${NTP_SERVER1}`,
 `${NET_ADDRESS}`, and `${SUBNET_MASK}` with their actual values.
 
-The `tinker panic 0` line is needed if and only if the machine is a VM.
+The `tinker panic 0` line is needed __if and only if__ the machine is a VM.
 In a non-VM context, the `tinker panic 0` line should be removed.
 
 + As root, run the following:
@@ -320,16 +354,10 @@ nameserver ${IP_ADDRESS}
 ```
 Be certain to replace the placeholders `${DOMAIN_FQDN}` and `${IP_ADDRESS}`
 with their actual values.
-Just a reminder that `${IP_ADDRESS}` is the IP address of the domain
-controller you are currently setting up---not your DNS forwarder or your
-router's DNS server address.
 
----
-### Reboot to make all modified settings active (especially the name changes)
-+ As root, run the following:
-```
-reboot
-```
+Just a reminder that `${IP_ADDRESS}` is the IP address of the domain
+controller you are currently setting up---not of your DNS forwarder, nor
+of your router's DNS server.
 
 ---
 ### Provision the new AD domain
@@ -383,7 +411,7 @@ echo "${PRIVATE_DIR}"
 include "${PRIVATE_DIR}/named.conf";
 ```
 Be certain to replace the placeholder `${PRIVATE_DIR}` with its actual value.
-+ Insert the following line into the `options {}` block within
++ Insert the following line at the bottom of the `options {}` block within
   __/etc/bind/named.conf.options__:
 ```
 tkey-gssapi-keytab "${PRIVATE_DIR}/dns.keytab";
@@ -414,17 +442,6 @@ group:          compat winbind
 i.e.: add `winbind` to the end of the `passwd:` and `group:` lines.
 
 ---
-### Start the `bind9` service
-+ As root, run the following:
-```
-systemctl enable bind9
-systemctl start  bind9
-systemctl status bind9
-```
-The last command must show the service as `active (running)`.
-If not, then troubleshooting is necessary before continuing.
-
----
 ### Start the `samba-ad-dc` service
 + As root, run the following:
 ```
@@ -432,6 +449,17 @@ systemctl unmask samba-ad-dc
 systemctl enable samba-ad-dc
 systemctl start  samba-ad-dc
 systemctl status samba-ad-dc
+```
+The last command must show the service as `active (running)`.
+If not, then troubleshooting is necessary before continuing.
+
+---
+### Start the `bind9` service
++ As root, run the following:
+```
+systemctl enable bind9
+systemctl start  bind9
+systemctl status bind9
 ```
 The last command must show the service as `active (running)`.
 If not, then troubleshooting is necessary before continuing.
@@ -448,6 +476,7 @@ systemctl start ntp
 systemctl status ntp
 ```
 The last line should report that `ntp` is `active (running)`.
+If not, then troubleshooting is necessary before continuing.
 
 ---
 ### Test availability of kerberos
@@ -464,48 +493,12 @@ Should return without error.
 ```
 samba-tool dns zonelist localhost -UAdministrator
 ```
-Expect to see __three__ DNS zones listed (not necessarily in this order):
+Expect to see __two__ DNS zones listed (not necessarily in this order):
 ```
 pszZoneName  : ${DOMAIN_FQDN}
 ...
-pszZoneName  : ${REV_DNS_ZONE}
-...
 pszZoneName  : _msdcs.${DOMAIN_FQDN}
 ```
-In Samba versions up to (at least) v.4.5.8, the domain provisioning tool
-fails to create the reverse DNS lookup zone `${REV_DNS_ZONE}`, which means
-that the above command may only show two DNS zones. The next step will remedy
-this problem.
-
----
-### Create the reverse DNS lookup zone __(if necessary)__
-+ If the previous step found the `${REV_DNS_ZONE}` was missing, then
-run following command as root:
-```
-samba-tool dns zonecreate localhost ${REV_DNS_ZONE} -UAdministrator
-```
-Expect to see `Zone ... .in-addr.arpa created successfully`.
-Otherwise, troubleshooting is necessary before continuing.
-
----
-### Add a PTR record for the DC to the reverse lookup zone (if necessary)
-+ Check whether the necessary `PTR` record for the DC exists in DNS,
-  by running the following:
-```
-host ${IP_ADDRESS}
-```
-If you see an error message (`... not found: 3(NXDOMAIN)`), then the
-`PTR` record does not exist, and you need to create it.
-+ To create the `PTR` record, run the following as root:
-```
-HOST_NUM=$(echo ${IP_ADDRESS} | cut -f4 -d.)
-samba-tool dns add localhost ${REV_DNS_ZONE} ${HOST_NUM} PTR \
-        ${HOSTNAME}.${DOMAIN_FQDN}. -UAdministrator
-host ${IP_ADDRESS}
-```
-Expect `samba-tool` to report `Record added successfully`, and expect
-`host` to report `... domain name pointer ${HOSTNAME}.${DOMAIN_FQDN}.`
-Otherwise, troubleshoot and resolve before continuing.
 
 ---
 ### Test the correctness of ownerships/permissions on sysvol
@@ -522,7 +515,7 @@ Expect to see no errors from the latter command.
 
 ---
 ### Save a backup of the local idmap (for later, when adding DCs)
-+ As root, save the following into a script (e.g. named __ug-script.sh__),
++ As root, save the following into a script (named __ug-dump.sh__),
 then run the script:
 ```
 #!/bin/bash
@@ -546,8 +539,11 @@ while read g; do
         fi
 done
 ```
+The script is also available in the project's github repo, here:
+https://github.com/smonaica/samba-ad-dc/raw/master/scripts/ug-dump.sh
+
 This script queries all users and groups, to ensure that all
-entities are allocated in the local idmap.
+entities are allocated in the local idmap database.
 If any users or groups are reported `NOT FOUND`, then there is a problem
 that needs to be resolved before continuing.
 + As root, run the following:
@@ -604,6 +600,7 @@ description: Student Users
 ```
 ldbadd --url=/var/lib/samba/private/sam.ldb /root/ous.txt
 ```
+Expect to see something like `6 records created`.
 If no errors are reported, then your OUs have been added successfully.
 
 ---
@@ -663,9 +660,8 @@ Expect to see valid SRV records, not errors.
 + As root, run the following:
 ```
 host -t A ${HOSTNAME}.${DOMAIN_FQDN}. ${IP_ADDRESS}
-host ${IP_ADDRESS} ${IP_ADDRESS}
 ```
-Expect to see the DC's A and PTR records, not errors.
+Expect to see the DC's A record.
 + As root, run the following:
 ```
 host -t NS ${DOMAIN_FQDN}. ${IP_ADDRESS}
@@ -676,9 +672,8 @@ Expect to see the domain's NS and A records, not errors.
 ```
 host -t AXFR ${DOMAIN_FQDN}. ${IP_ADDRESS}
 host -t AXFR _msdcs.${DOMAIN_FQDN}. ${IP_ADDRESS}
-host -t AXFR ${REV_DNS_ZONE}. ${IP_ADDRESS}
 ```
-Expect to see complete dumps (or "zone transfers") of the three DNS zones.
+Expect to see complete dumps (or "zone transfers") of the two DNS zones.
 
 ---
 ### Show the FSMO roles
