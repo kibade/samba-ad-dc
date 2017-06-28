@@ -1,4 +1,4 @@
-Disaster Recovery Guide for Active Directory sites
+Total Disaster Recovery Guide for Active Directory sites
 ===
 
 Version 1.00 - Luke B
@@ -7,6 +7,8 @@ Assumptions:
 -
 - Both DC1 and DC2 are offline, not expected to wake up
 	- ***DO NOT CONTINUE*** if either Domain Controllers will come back online. *You have been warned!*
+	- If only one DC has died, follow the **Add a Domain Controller to Samba AD** document to rebuild
+	- If your file server has failed, rebuild using the README, except for creating your FIRST Active Directory Domain Controller.
 - Homer has a backup of your DC2 VBox image and settings
 - The backup is less than 180 days old (Tombstone Lifetime)
 - RSync is installed
@@ -25,7 +27,7 @@ Referring to the documents listed below, follow the below steps in order:
 1. **Setup File Server** - Ensure you have a BASE Linux Install, with `rsync` and a text editor installed. Include the instructions for setting up DHCP, and hand out the District DNS servers to the clients.
 2. **Virtualbox Headless Setup** - We need to get the Virtualbox Hypervisor available.
 3. At this point, follow the instructions below to get your backed-up Domain Controller (dc2) online:
-	1. Contact Morris and/or Ming to `rsync` your DC's image to your newly built server. Place the files in `/home/vboxuser/`, recreating the exact folder struture you had before.
+	1. Contact Morris and/or Ming to `rsync` your DC's image to your newly built server. Place the files in `/home/vboxuser/`, recreating the exact folder structure you had before.
 	2. Ensure that file permissions are correct. All the files within `vboxuser` are owned by both the user and group, `vboxuser`, with full permissions.
 	3. Login as `vboxuser`, using the `su - -s/bin/bash vboxuser` command as `root`. Your bash prompt should change itself to be a dollar sign (`$`), and the username should read `vboxuser`.
 	4. Run `vboxmanage list vms`. Ensure you see dc2-vm listed. If you do, run it by executing `vboxheadless --startvm "dc2-vm"`. This will tell you what port the VRDP port is, and you can connect using that port with Remote Desktop.
@@ -63,7 +65,7 @@ Referring to the documents listed below, follow the below steps in order:
         tdbbackup -s .bak /var/lib/samba/private/idmap.ldb
     ```
 
-4. **Add DC to Samba4 AD** - This will get your replication going again. When following the document, remember to substitude `dc2` with `dc3` - Your DC2 is going to be your main Domain Controller, and this needs to also be **updated in the First Class School Repository**. When replication has started/is working, continue on.
+4. **Add DC to Samba4 AD** - This will get your replication going again. When following the document, remember to substitute `dc2` with `dc3` - Your DC2 is going to be your main Domain Controller, and this needs to also be **updated in the First Class School Repository**. When replication has started/is working, continue on.
 
     DC3 will take the old DC1's IP address, which will likely be 10.YY.10.3. Update as necessary, but leave DC2's IP address as-is.
 5. **Add Member Server to Samba4 AD** - This will get your VBox Host (aka FS1) connected as a computer, and then you can start restoring its backups from Homer (again, coordinate with Ming and/or Morris). When restoring, **do not import the `/etc/samba/smb.conf` file directly into your working setup**.
