@@ -15,6 +15,7 @@ __Change Log:__
   - Switched the order of the "Start bind" and "Start samba" sections, as
     it seems better to have samba up and running before bind.
   - Numerous edits made to improve clarity.
+  - Added a "Troubleshooting Hint" to cover a failure mode discovered in testing.
 + v.4.0, released June 23, 2017:
   - Updated "Configure time synch" to provide AD-authenticated time synch.
 + v.3.5, released June 17, 2017:
@@ -551,6 +552,15 @@ systemctl status bind9
 ```
 The last command must show the service as `active (running)`.
 If not, then troubleshooting is necessary before continuing.
++ Troubleshooting Hint:
+  - If the `bind9` service reports as `failed`, with some mention of
+    "missing NS records" in a reverse-DNS zone (ending with
+    `.in-addr.arpa`), then try deleting the offending DNS zone.
+    Assuming the DNS zone's name is `${BAD_ZONE}`, run the following
+    to delete the zone from the AD domain:
+```
+samba-tool dns zonedelete ${DC1_HOSTNAME} ${BAD_ZONE} -UAdministrator
+```
 + Don't forget to switch back to the new DC for the next steps!
 
 ---
