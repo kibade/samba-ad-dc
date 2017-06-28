@@ -411,7 +411,7 @@ echo "${PRIVATE_DIR}"
 include "${PRIVATE_DIR}/named.conf";
 ```
 Be certain to replace the placeholder `${PRIVATE_DIR}` with its actual value.
-+ Insert the following line at the bottom of the `options {}` block within
++ Insert the following line into the `options {}` block within
   __/etc/bind/named.conf.options__:
 ```
 tkey-gssapi-keytab "${PRIVATE_DIR}/dns.keytab";
