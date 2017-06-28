@@ -10,11 +10,14 @@ server", or a "member server".
 Domain-member servers are typically used to serve file shares in an AD
 domain, since Directory Controllers are not recommended to fill that role.
 
-__Version:__ 4.0
+__Version:__ 5.0
 
-__Updated:__ June 23, 2017
+__Updated:__ June 28, 2017
 
 __Change Log:__
++ v.5.0, released June 28, 2017:
+  - Updated the "Static IP" and "Local Host Name" sections.
+  - Removed all references to DNS PTR records in the tests.
 + v.4.0, released June 17, 2017:
   - Updated "Configure time synch".
 + v.3.1, released June 17, 2017:
@@ -105,8 +108,13 @@ session, so you will need to source __/root/params.sh__ every time you start
 a new session in which you intend to use those variables.
 
 ---
-### Configure a static IP address
-+ (N.B.: Do the following steps in a console, as the network will drop.)
+### Configure a static IP address __(if necessary)__
++ It is necessary to run a domain-member server with a static IP address.
++ Ideally, the server's IP address will be set to its static value when
+  the OS is installed.
++ If that is the case here, then immediately skip to the next section
+  ("Configure local hostname resolution").
++ N.B.: Do the steps for this section in a console, as the network will drop.
 + As root, run the following:
 ```
 ifdown ${INTERFACE_NAME}
@@ -119,15 +127,38 @@ iface ${INTERFACE_NAME} inet static
     netmask ${SUBNET_MASK}
     gateway ${GATEWAY}
 ```
+Be certain to replace the placeholders `${INTERFACE_NAME}`, `${IP_ADDRESS}`,
+`${SUBNET_MASK}`, and `${GATEWAY}` with their actual values.
 + As root, run the following:
 ```
 ifup ${INTERFACE_NAME}
+ip addr show ${INTERFACE_NAME}
 ```
+Expect `ip addr` to show that the interface is in the UP state.
+Otherwise, do not proceed until it is so.
 
 ---
 ### Configure local host name resolution
-+ (From here on, it is okay to continue in an SSH session.)
-+ As root, run the following:
++ From here on, it is okay to continue work in an SSH session.
++ Local host name resolution must resolve the server's names to a real
+  IP address that is not in the `127.0.0.0/8` range.
++ If the server was configured with a static IP address when the OS
+  was installed, then it is likely that the configuration is already done.
++ To check, run the following:
+```
+getent hosts ${HOSTNAME}
+```
+The output should be exactly one line, arranged as follows:
+```
+${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
+```
+That is, local host name resolution should resolve the server's
+hostname and fqdn to its NIC's IP address, and not to a `127.0.0.0/8`
+address.
++ If the above check revealed that the server's hostname and fqdn
+  resolve to its NIC's static IP address, then immediately skip to
+  the next section ("Install the necessary software packages").
++ Otherwise, run the following, as root:
 ```
 echo "${HOSTNAME}" >/etc/hostname
 ```
@@ -138,9 +169,9 @@ ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 Be certain to replace the placeholders `${IP_ADDRESS}`, `${HOSTNAME}`,
 and `${DOMAIN_FQDN}` with their actual values.
 
-Be certain to remove the `127.0.1.1` entry for the host, if it exists,
+Be certain to remove the `127.x.x.x` line for the host, if it exists,
 while leaving the `127.0.0.1 localhost` entry intact. The above entry
-needs to be the __only__ line that mentions the server's DNS name,
+__must__ be the __only__ line that mentions the server's host name,
 otherwise local name resolution is ambiguous, which can cause problems
 for the domain-join process.
 
@@ -160,6 +191,11 @@ Expect the output of `getent` to look as follows:
 ${IP_ADDRESS}    ${HOSTNAME}.${DOMAIN_FQDN}    ${HOSTNAME}
 ```
 i.e. the output should match the server's line in __/etc/hosts__.
++ Finally, since the server's host name configuration has (possibly)
+  changed, reboot the server now. As root, run the following command:
+```
+reboot
+```
 
 ---
 ### Install the necessary software packages
@@ -283,19 +319,12 @@ with their actual values.
 
 The above config is merely the minimum requirement.
 If the domain to be joined has multiple DCs, then be certain that 
-__/etc/resolv.conf__ has exactly one`nameserver` line for each DC.
+__/etc/resolv.conf__ has exactly one `nameserver` line for each DC.
 + As root, run the following:
 ```
 ping -n -c3 ${DC1_HOSTNAME}
 ```
 Expect to see three ping responses from the "master" DC.
-
----
-### Reboot to make all modified settings active (especially the name changes)
-+ As root, run the following:
-```
-reboot
-```
 
 ---
 ### Configure samba
@@ -357,24 +386,23 @@ ln -s "${PRIVATE_DIR}/krb5.conf"
 kinit administrator
 klist
 ```
-+ If this test fails, ensure that the existing DC is up, is working,
++ If this test fails, ensure that the "master" DC is up, is working,
   and is reachable. Do not continue until this test passes.
 
 ---
 ### Test that DNS correctly resolves key AD records
-+ As root, run the following:
++ Run the following:
 ```
 host -t A ${DC1_HOSTNAME}.${DOMAIN_FQDN}.
-host ${DC1_ADDRESS}
 ```
-Expect to see the `A` and `PTR` records of the existing "master" DC.
-+ As root, run the following:
+Expect to see the `A` record of the existing "master" DC.
++ Run the following:
 ```
 host -t NS ${DOMAIN_FQDN}.
 host -t A ${DOMAIN_FQDN}.
 ```
 Expect to see the AD domain's `NS` and `A` records.
-+ As root, run the following:
++ Run the following:
 ```
 host -t SRV _ldap._tcp.${DOMAIN_FQDN}.
 host -t SRV _kerberos._udp.${DOMAIN_FQDN}.
@@ -391,7 +419,7 @@ net ads join -U Administrator
 ```
 Expect to see `Joined '${HOSTNAME}' to dns domain ${DOMAIN_FQDN}`.
 + If this fails, troubleshooting is necessary before you can continue.
-+ (N.B.: At this point, no samba services have been started yet.)
++ (N.B.: At this point, no samba services have started yet.)
 
 ---
 ### Configure Name Service Switch (NSS)
@@ -420,6 +448,13 @@ systemctl status winbind smbd nmbd
 wbinfo --ping-dc
 ```
 Expect to see `dc connection ... succeeded`.
++ As root, run the following:
+```
+net ads testjoin
+```
+Expect to see `Join is OK`. If not, then rerun the `testjoin` with a
+debug level of 2, 3, or greater (add `-d2` or `-d3` to the above
+command), to get more verbose diagnostic information.
 + As root, run the following:
 ```
 wbinfo -u
@@ -460,6 +495,12 @@ watch id ${DOMAIN}/user.name
 This command reruns the `id` command every 2 seconds.
 If group membership(s) are not reflected correctly after 10 to 15 seconds
 (at most), then you may need to forcibly clear the winbind cache as follows:
+```
+net cache flush
+```
+If the above doesn't work, the following approach may work (but it must
+remain a last resort, since it involves stopping `winbind`, which can be
+disruptive in a production environment):
 ```
 CACHEDIR=$(smbd -b |egrep CACHEDIR |cut -f2- -d':' |sed 's/^ *//')
 systemctl stop winbind
