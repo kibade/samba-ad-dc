@@ -8,11 +8,8 @@ REALM="SFG.AD.SD57.BC.CA"
 ADMIN_PASSWORD="secRet!23"
 HOSTNAME="dc2"
 NTP_SERVER1="time.sd57.bc.ca"
-REV_DNS_ZONE="10.45.10.in-addr.arpa"
 DC1_ADDRESS="10.45.10.3"
 DC1_HOSTNAME="dc1"
-
-HOST_NUM=$(echo ${IP_ADDRESS} | cut -f4 -d.)
 
 if which smbd >&/dev/null; then
 CONFIGFILE=$(smbd -b |egrep CONFIGFILE |cut -f2- -d':' |sed 's/^ *//')
