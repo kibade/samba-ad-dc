@@ -5,6 +5,26 @@ Version 1.00 - Initial Commit
 
 **Description**: Active Directory works great when  it is well-maintained. While we do not have Powershell access to the domain, we still need to ensure that it is cared for, like a growing tree in a small forest.
 
+Connecting to Active Directory with RSAT Tools
+-
+
+As found out, you can run the RSAT tools, even from a non-domain-joined computer.
+
+1. Open the Command Prompt (or Powershell) As Administrator (<kbd>Windows</kbd>+<kbd>X</kbd>, <kbd>A</kbd>)
+2. Ensure your DNS server addresses are pointed to the Domain Controllers (`10.YY.10.3` and `10.YY.10.4`)
+3. Execute `runas /netonly /user:DOMAIN\USERNAME mmc` - replacing your DOMAIN and USERNAME with a Domain Administrator account.
+4. Assuming MMC launches, you should be able to load your RSAT tools for that site. If you did not save a custom layout, you can access them as per below (from `%WINDIR%\System32`):
+
+ >  - **Active Directory Users and Computers** - `dsa.msc`
+ - **Group Policy Management Console** - `gpmc.msc`
+ - **DNS** - `dnsmgmt.msc`
+ - **Shared Folders** - `fsmgmt.msc`
+ - **Printer Management** - `printmanagement.msc`
+
+5. When you open them, you may get messages about not being able to connect to the Domain Servers. You can right-click on the top level for each snap-in, and choose `Connect to domain...`. Type in your Domain Name (`SCHOOLCODE.ad.sd57.bc.ca`).
+6. To ensure you're working on your Master Domain Controller, right-click the domain and choose `Connect to Domain Controller...`. Ensure you are working on your main Domain Controller that feeds the rest of the controllers on your network.
+7. Ensure you close the Command Prompt / Powershell windows when you are done, as they will still have your login credentials available to them.
+
 Daily tasks:
 -
 
