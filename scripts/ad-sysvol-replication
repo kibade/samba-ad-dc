@@ -1,0 +1,14 @@
+# /etc/cron.d/ad-sysvol-replication
+
+# Hostname of the DC with the "master" sysvol
+# (set to empty to disable replication):
+MASTER_DC=""
+
+# Filesystem location of sysvol:
+SYSVOLDIR="/var/lib/samba/sysvol"
+
+# Logfile for replication:
+LOGFILE="/var/log/ad-sysvol-replication.log"
+
+*/5 * * * * root if [ -n "${MASTER_DC}" ] && [ "${MASTER_DC}" != "$(hostname)" ]; then date >> "${LOGFILE}" ; rsync -aAXHI --delay-updates --delete-delay "${MASTER_DC}":"${SYSVOLDIR}/" "${SYSVOLDIR}/" >> "${LOGFILE}" 2>&1 ; fi
+
