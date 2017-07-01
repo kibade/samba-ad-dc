@@ -1,9 +1,11 @@
 # Installing VirtualBox for Headless Operation on a Debian Host
-__Version:__ 2.1
+__Version:__ 3.0
 
-__Updated:__ June 24, 2017
+__Updated:__ July 1, 2017
 
 __Change Log:__
++ v.3.0, released July 1, 2017:
+  - Updated the "Creating VMs" section, with new info and recommendations.
 + v.2.1, released June 24, 2017:
   - Updated "Configure boot-time VM auto-starting", to make it clearer.
 + v.2.0, released June 24, 2017:
@@ -277,16 +279,64 @@ VMs are almost never stable timekeepers.
 ---
 ### Creating VMs
 + VMs are created **exclusively** using the `vboxuser` account.
-  Example scripts for creating Windows and Debian VMs can be found in the 
-  __scripts__ subdirectory of this project's git repo. The scripts are named
-  __create-*-vm.sh__.
-  Copy the scripts to the local `vboxuser` home directory, and edit their
-  configuration variables, as necessary.
 + Reminder: To open a shell running as the `vboxuser` user, run the
   following as root:
 ```
 su -s /bin/bash - vboxuser
 ```
++ It is strongly recommended that the following script be used to create
+  Debian and Windows VMs:
+
+https://github.com/smonaica/samba-ad-dc/raw/master/scripts/create-virtualbox-vm.sh
+
++ How to use the `create-virtualbox-vm.sh` script:
+  - Assumption: You want to create a VM named `thing`.
+  - Put a copy of the script in `/home/vboxuser/`, and rename the copy
+    `create-thing-vm.sh`.
+  - Configure `create-thing-vm.sh` by editing the Config Variables
+    section (at the top of the script).
+
++ More about the Config Variables in `create-virtualbox-vm.sh`:
+  - `vm` is the name of the VM, and must be unique on the VM host.
+  - `console_rdp_port` is the port number to which RDP clients
+    connect to view the VM's console. It must be unique on the VM host.
+    The recommended range of ports to use is 5000-6000.
+  - `autostart_delay_seconds` should be configured so that VMs get
+    auto-started one-at-a-time at VM host boot-time, with a 15- or
+    30-second delay between each VM.
+
++ Advanced use of the `create-virtualbox-vm.sh` script:
+  - Instead of creating an image file for a VM, it is possible to use
+    an LVM LV (logical volume) for a VM's virtual disk. Steps to take
+    to do this:
+    - One time setup step: Copy the `99-virtualbox-lv.rules` script
+      to `/etc/udev/rules.d/`. The script can be found here:
+
+https://github.com/smonaica/samba-ad-dc/raw/master/scripts/99-virtualbox-lv.rules
+
+    - Note that the `.rules` script assumes your LVM Volume Group
+      is named `vg0`. If it's not, then you will need to replace
+      all instances of `vg0` in the script with your VG's name.
+
+    - IMPORTANT NOTE: VG and LV names are CASE-SENSITIVE!
+
+    - Create an LV for the VM, by running this (assuming you want
+      to create an LV of size 20G, for a VM named `thing`, in
+      the VG named `vg0`):
+```
+lvcreate -n vm_thing -L 20G vg0
+```
+    - In your `create-thing-vm.sh` script, comment-out the command
+      that begins with `vboxmanage createmedium`, and uncomment the
+      command that begins with `vboxmanage internalcommands`
+      immediately below it.
+
+    - Configure the `create-thing-vm.sh` script as usual. In this
+      instance, you can ignore the `disk_mebibytes` and `disk_variant`
+      variables, since they are not relevant when using a pre-created
+      LV for the VM's virtual disk.
+
+    - Finally, run `create-thing-vm.sh` to create the VM.
 
 ---
 ### Managing VMs
