@@ -294,6 +294,7 @@ su -s /bin/bash - vboxuser
     `create-thing-vm.sh`.
   - Configure `create-thing-vm.sh` by editing the Config Variables
     section (at the top of the script).
+  - Run `create-thing-vm.sh` to create the VM.
 
 + More about the Config Variables in `create-virtualbox-vm.sh`:
   - `vm` is the name of the VM, and must be unique on the VM host.
@@ -318,15 +319,11 @@ su -s /bin/bash - vboxuser
   - Create an LV for the VM, by running this (assuming you want
     to create an LV of size 20G, for a VM named `thing`, in
     the VG named `vg0`):  `lvcreate -n vm_thing -L 20G vg0`
-  - In your `create-thing-vm.sh` script, comment-out the command
-    that begins with `vboxmanage createmedium`, and uncomment the
-    command that begins with `vboxmanage internalcommands`
-    immediately below it.
-  - Configure the `create-thing-vm.sh` script as usual. In this
-    instance, you can ignore the `disk_mebibytes` and `disk_variant`
-    variables, since they are not relevant when using a pre-created
-    LV for the VM's virtual disk.
-  - Finally, run `create-thing-vm.sh` to create the VM.
+  - Configure the `create-thing-vm.sh` script as usual, but
+    set the `hdd_type="lvm"` and `lvm_lv_device="/dev/vg0/vm_$vm"`.
+    You can ignore the `vdi_mebibytes` and `vdi_variant` variables,
+    since they are not relevant when using `hdd_type="lvm"`.
+  - Run `create-thing-vm.sh` to create the VM.
 
 ---
 ### Managing VMs
