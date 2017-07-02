@@ -23,19 +23,31 @@ boot_iso="$HOME/stretch-mini-amd64.iso"
 # RAM size, in mebibytes; e.g.: 2048 == 2G, 4096 == 4G, 8192 == 8G, etc.
 ram_mebibytes=2048
 
-# Size of the virtual HDD image file to create, in mebibytes
-disk_mebibytes=19074
-
-# Type of the virtual HDD image file to create. Choices are: fixed, standard
-# The fixed variant has a fixed-size; the standard variant grows.
-disk_variant="fixed"
-
 # RDP port to connect to on the host to view the VM guest's console.
 # Every guest must have a unique port on the host.
 console_rdp_port=5011
 
 # Seconds to wait after the host boots before autostarting the VM.
 autostart_delay_seconds=60
+
+# Type of virtual HDD to use with this VM. Choices are: vdi, lvm
+#   vdi == create a new (or reuse an existing) VDI image file
+#   lvm == use a pre-created Logical Volume (LV)
+hdd_type="vdi"
+
+# Only relevant when hdd_type is "vdi".
+# Size of the virtual HDD image file to create, in mebibytes.
+vdi_mebibytes=19074
+
+# Only relevant when hdd_type is "vdi".
+# Type of the virtual HDD image file to create. Choices are: fixed, standard
+#   fixed == the disk image is a fixed-size (never changing)
+#   standard == the disk image grows dynamically as data fills the virtual HDD
+vdi_variant="fixed"
+
+# Only relevant when hdd_type is "lvm"
+# Full path name of the LV device to be the virtual HDD. It must exist.
+lvm_lv_device="/dev/vg0/vm_$vm"
 
 ###############################################################################
 ### End of Config Variables
@@ -46,6 +58,7 @@ autostart_delay_seconds=60
 ## - a unicast address (LSB of first octet is 0)
 ## - a Locally Administrated Address (2nd LSB of first octet is 1)
 ##
+
 random_mac () {
 	local -a octets
 	octets=( $( hexdump -e '1/1 "%02x" 5/1 " %02x"' -n 6 /dev/urandom ) )
@@ -54,11 +67,11 @@ random_mac () {
 }
 
 ##
-## One-time setup commands for the current user. They are shown here
-##   commented-out, since they should already have been run.
+## Set up the assumed VirtualBox environment for the current user.
 ##
-# vboxmanage setproperty machinefolder "$HOME/VMs"
-# vboxmanage setproperty autostartdbpath "/etc/vbox/autostart.d"
+
+vboxmanage setproperty machinefolder   "$HOME/VMs"
+vboxmanage setproperty autostartdbpath "/etc/vbox/autostart.d"
 
 ##
 ## Check whether the VM already exists (i.e. is registered, or files exist).
@@ -97,11 +110,46 @@ if [ -e "$vbox" ]; then
 
 fi
 
+##
+## Check the hdd_type and set the disk_file accordingly.
+##
+
+case "$hdd_type" in
+
+	"vdi")
+		disk_file="${vbox%.vbox}.vdi"
+		;;
+	"lvm")
+		disk_file="${vbox%.vbox}.vmdk"
+
+		if [ ! -r "$lvm_lv_device" ]; then
+
+			echo
+			echo "Error: LV '$lvm_lv_device' does not exist, or"
+			echo "    it is not readable."
+			echo
+			echo "Script aborted."
+			echo
+			exit 3
+
+		fi
+		;;
+	*)
+		echo
+		echo "Configuration error: Unknown hdd_type: '$hdd_type'"
+		echo
+		echo "Script aborted."
+		echo
+		exit 4
+		;;
+esac
+
 if [ "${os_type:0:7}" = "Windows" ]; then
 
 ##
-## Settings specifc to a Windows guest.
+## Settings specifc to Windows guests.
 ##
+
 	paravirtprovider="hyperv"
 	rtcuseutc="off"
 	nictype1="82540EM"
@@ -109,8 +157,9 @@ if [ "${os_type:0:7}" = "Windows" ]; then
 else
 
 ##
-## Settings for a non-Windows guest.
+## Settings for non-Windows (assumed Linux) guests.
 ##
+
 	paravirtprovider="kvm"
 	rtcuseutc="on"
 	nictype1="virtio"
@@ -162,36 +211,26 @@ vboxmanage storageattach "$vm" \
 	--type dvddrive \
 	--medium "$boot_iso"
 
-##
-## If it doesn't already exist, create an image file to be the virtual disk.
-##
-
-disk_file="$HOME/VMs/$vm/$vm.vdi"
-
 if [ ! -e "$disk_file" ]; then
 
 	echo
 	echo "Creating the virtual disk image file..."
 	echo
 
-	vboxmanage createmedium disk \
-		--filename "$disk_file" \
-		--size $disk_mebibytes \
-		--variant $disk_variant
+	case "$hdd_type" in
 
-#
-#	## Alternative: Use an LVM logical volume (LV) as the disk medium.
-#	## Requirements for the LV to work in this context:
-#	## - It must already exist.
-#	## - It must must be named "vg0/vm_$vm".
-#	## - It must be fully r/w accessible by vboxuser, which means there
-#	##   needs to be a ".rules" script in /etc/udev/rules.d/ for it.
-#	disk_file="$HOME/VMs/$vm/$vm.vmdk"
-#
-#	vboxmanage internalcommands createrawvmdk \
-#		-filename "$disk_file" \
-#		-rawdisk "/dev/vg0/vm_$vm"
-#
+		"vdi")
+			vboxmanage createmedium disk \
+				--filename "$disk_file" \
+				--size      $vdi_mebibytes \
+				--variant   $vdi_variant
+			;;
+		"lvm")
+			vboxmanage internalcommands createrawvmdk \
+				-filename "$disk_file" \
+				-rawdisk  "$lvm_lv_device"
+			;;
+	esac
 
 else
 
@@ -200,7 +239,7 @@ else
 	echo
 	echo "    $disk_file"
 	echo
-	echo "Using this file as the VM's disk image."
+	echo "This file will be used as the VM's virtual disk image."
 	echo
 
 fi
