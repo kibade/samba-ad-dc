@@ -8,11 +8,13 @@ If your intention is to create a new DC to add to an existing AD domain, then
 this document is **not the correct guide to follow**. Instead, you want
 `How to Add a New Samba4 Domain Controller (DC) To An Existing Samba4 AD`.
 
-__Version:__ 5.0
+__Version:__ 6.0
 
-__Updated:__ June 28, 2017
+__Updated:__ July 2, 2017
 
 __Change Log:__
++ v.6.0, released July 2, 2017:
+  - Added instructions to install cron.d and utility scripts from git repo.
 + v.5.0, released June 28, 2017:
   - Removed all references to the reverse-lookup DNS zone and PTR records.
     The reverse-DNS zone is not needed, and it can break disaster recovery.
@@ -514,45 +516,53 @@ samba-tool ntacl sysvolcheck
 Expect to see no errors from the latter command.
 
 ---
-### Save a backup of the local idmap (for later, when adding DCs)
-+ As root, save the following into a script (named __ug-dump.sh__),
-then run the script:
+### Install `ad-sysvol-replication` script (unconfigured)
++ As root, run the following:
 ```
-#!/bin/bash
-set -eu
-echo "USERS:"
-samba-tool user list |
-while read u; do
-        if ! getent passwd "$u" >&/dev/null; then
-                getent passwd "BUILTIN/$u" || echo "NOT FOUND: $u"
-        else
-                getent passwd "$u" || echo "NOT FOUND: $u"
-        fi
-done
-echo "GROUPS:"
-samba-tool group list |
-while read g; do
-        if ! getent group "$g" >&/dev/null; then
-                getent group "BUILTIN/$g" || echo "NOT FOUND: $g"
-        else
-                getent group "$g" || echo "NOT FOUND: $g"
-        fi
-done
+cd /etc/cron.d/
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/ad-sysvol-replication"
+chown root:root ad-sysvol-replication
+chmod 0644 ad-sysvol-replication
 ```
-The script is also available in the project's github repo, here:
-https://github.com/smonaica/samba-ad-dc/raw/master/scripts/ug-dump.sh
+The script is left unconfigured (`MASTER_DC` is left blank), since this DC is
+currently the "master" DC. The script is installed now, in the case that a
+different DC becomes the master later.
 
+---
+### Install utility scripts
++ As root, run the following:
+```
+cd /usr/local/sbin/
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/add-students.sh"
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/backup_samba_tdbs.sh"
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/ug-dump.sh"
+chown root:root add-students.sh backup_samba_tdbs.sh ug-dump.sh
+chmod 0750 add-students.sh backup_samba_tdbs.sh ug-dump.sh
+```
+
+---
+### Save a backup of the local idmap
++ As root, run the following:
+```
+/usr/local/sbin/ug-dump.sh
+```
 This script queries all users and groups, to ensure that all
 entities are allocated in the local idmap database.
 If any users or groups are reported `NOT FOUND`, then there is a problem
 that needs to be resolved before continuing.
 + As root, run the following:
 ```
-PRIVATE_DIR=$(smbd -b |egrep PRIVATE_DIR |cut -f2- -d':' |sed 's/^ *//')
-tdbbackup -s .bak "${PRIVATE_DIR}/idmap.ldb"
-ls "${PRIVATE_DIR}/idmap.ldb.bak"
+/usr/local/sbin/backup_samba_tdbs.sh
 ```
-The latter command should list the idmap backup file: `idmap.ldb.bak`.
+This command saves a backup of samba's databases (.tdb/.ldb files) to the
+`/var/backups/samba_tdb_backup` tree. It will likely report an error about
+one (or a few) specific files that it could not backup, but the following
+commands will verify that the local idmap database file was backed up:
+```
+PRIVATE_DIR=$(smbd -b |egrep PRIVATE_DIR |cut -f2- -d':' |sed 's/^ *//')
+ls -l "/var/backups/samba_tdb_backup/${PRIVATE_DIR}/idmap.ldb"
+```
+The latter command should list the `idmap.ldb` file, proving its existence.
 
 ---
 ### Create the default OUs
