@@ -63,24 +63,18 @@ db_files=(
 )
 
 ##
-## Remove any .bak files sitting next to .tdb/.ldb files, as they
-## will prevent 'tdbbackup' from doing its work.
-##
-
-bak_files=(
-	$(for dbf in "${db_files[@]}"; do echo "${dbf}.bak"; done)
-)
-
-for bkf in "${bak_files[@]}"; do echo "$bkf"; done | xargs rm -f
-
-##
 ## Create the .bak backup files.
-## Allow errors to occur withou aborting the script,
-## since some .tdb/.ldb files will be locked and not backup-able.
+## Need to remove pre-existing .bak files, since they prevent 'tdbbackup'
+## from doing its work.
+## Need to allow errors to occur without aborting the script, since some
+## .tdb/.ldb files may be locked and not "backup-able".
 ##
 
 set +e
-for dbf in "${db_files[@]}"; do	tdbbackup -s .bak "$dbf"; done
+for dbf in "${db_files[@]}"; do
+	rm -f "${dbf}.bak"
+	tdbbackup -s .bak "$dbf"
+done
 set -e
 
 ##
@@ -93,9 +87,10 @@ set -e
 ##
 
 (
-for bkf in "${bak_files[@]}"; do
+for dbf in "${db_files[@]}"; do
+	bkf="${dbf}.bak"
 	if [ -e "$bkf" ]; then
-		echo "${bkf%.bak}"
+		echo "$dbf"
 		echo "$bkf"
 	fi
 done
