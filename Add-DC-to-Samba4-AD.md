@@ -4,11 +4,13 @@ __Summary:__
 This document describes a sequence of steps intended to add a new Domain
 Controller (DC) to an existing Active Directory (AD) domain.
 
-__Version:__ 5.0
+__Version:__ 6.0
 
-__Updated:__ June 28, 2017
+__Updated:__ July 2, 2017
 
 __Change Log:__
++ v.6.0, released July 2, 2017:
+  - Added instructions to install cron.d and utility scripts from git repo.
 + v.5.0, released June 28, 2017:
   - Removed all references to the reverse-lookup DNS zone and PTR records.
     The reverse-DNS zone is not needed, and it can break disaster recovery.
@@ -497,8 +499,7 @@ i.e.: add `winbind` to the end of the `passwd` and `group` lines.
 ```
 PRIVATE_DIR=$(smbd -b |egrep PRIVATE_DIR |cut -f2- -d':' |sed 's/^ *//')
 cd "${PRIVATE_DIR}"
-rsync -aAXHP ${DC1_HOSTNAME}:"${PRIVATE_DIR}/idmap.ldb.bak" ./
-rsync -aAXHP idmap.ldb.bak idmap.ldb
+rsync -aAXHP ${DC1_HOSTNAME}:"/var/backups/samba_tdb_backup/${PRIVATE_DIR}/idmap.ldb" ./
 ```
 
 ---
@@ -679,18 +680,31 @@ samba-tool ntacl sysvolreset
   step ("Copy the contents of the `sysvol` share ...").
 
 ---
-### Configure pull-style `sysvol` replication
-+ As root, create new text file `/etc/cron.d/ad-sysvol-replication`
-  with the following contents (__all on one line__):
+### Install `ad-sysvol-replication` script, for pull-style `sysvol` replication
++ As root, run the following:
 ```
-*/5 * * * * root /usr/bin/rsync -aAXHI --delay-updates --delete-delay
-        ${DC1_HOSTNAME}:"${STATEDIR}/sysvol/" "${STATEDIR}/sysvol/"
-        >/dev/null 2>&1
+cd /etc/cron.d/
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/ad-sysvol-replication"
+chown root:root ad-sysvol-replication
+chmod 0644 ad-sysvol-replication
 ```
-Be certain to replace the placeholders `${DC1_HOSTNAME}` and `${STATEDIR}`
-with their actual values. Also, be certain that the above cron script
-appears __all on one line__ within the file, otherwise the cronjob will
-not function.
+Edit the script to set `MASTER_DC="${DC1_HOSTNAME}"` (replacing the placeholder
+`${DC1_HOSTNAME}` with its actual value).
+
+As configured, the script runs every 5 minutes, performing a "pull-style"
+synchronization of `sysvol` from the "master" DC each time.
+
+---
+### Install utility scripts
++ As root, run the following:
+```
+cd /usr/local/sbin/
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/add-students.sh"
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/backup_samba_tdbs.sh"
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/ug-dump.sh"
+chown root:root add-students.sh backup_samba_tdbs.sh ug-dump.sh
+chmod 0750 add-students.sh backup_samba_tdbs.sh ug-dump.sh
+```
 
 ---
 ### The remainder of the steps are only tests (no more config changes)
