@@ -1,6 +1,6 @@
 Group Policies
 ==============
-*Version 0.3*
+*Version 0.4*
 
 - Create Starter GPO for Firewall rules
 	- Windows Firewall rules have been MOVED
@@ -104,8 +104,11 @@ The Policies to Apply
                  -   Local Policies
                      -   Security Options
                          -   Block Microsoft Accounts = **Users cannot add or logon with Microsoft Accounts** (**Requires Edu**)
+			 -   Domain member: Digitally encrypt or sign secure channel data (always) = **Enabled**
                          -   Interactive Logon: Do not require CTRL+Alt+Del = **ENABLED**
                          -   Interactive Logon: Prompt user to change password before expiration = **14 days**
+			 -   Microsoft network client: Digitally sign communications (always) = **Enabled**
+			 -   Microsoft network server: Digitally sign communications (always) = **Enabled**
                          -   User Account Control: Behavior of the elevation prompt for administrators in Admin Approval Mode = **Elevate Without Prompting**
                          -   User Account Control: Behavior of the elevation prompt for standard users = **Prompt for Credentials**
                  -   Network List Manager Policies
