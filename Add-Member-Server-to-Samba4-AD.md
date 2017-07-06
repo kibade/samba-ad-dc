@@ -10,11 +10,13 @@ server", or a "member server".
 Domain-member servers are typically used to serve file shares in an AD
 domain, since Directory Controllers are not recommended to fill that role.
 
-__Version:__ 5.0
+__Version:__ 5.1
 
-__Updated:__ June 28, 2017
+__Updated:__ July 6, 2017
 
 __Change Log:__
++ v.5.1, released July 6, 2017:
+  - Updated `smb.conf` file for client/server signing to be mandatory.
 + v.5.0, released June 28, 2017:
   - Updated the "Static IP" and "Local Host Name" sections.
   - Removed all references to DNS PTR records in the tests.
@@ -364,6 +366,9 @@ Expect to see three ping responses from the "master" DC.
         vfs objects = acl_xattr
         map acl inherit = yes
         store dos attributes = yes
+        
+        client signing = mandatory
+        server signing = mandatory        
 ```
 Be certain to replace the placeholders `${DOMAIN}`, `${REALM}`,
 `${INTERFACE_NAME}`, and `${IDMAP_RANGE}` with their actual values.
