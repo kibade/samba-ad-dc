@@ -81,10 +81,10 @@ The Policies to Apply
 **Default\_Computer**
 
 - Computer Configuration
-  - Policies
-     - Windows Settings
-	     - Scripts (Startup/Shutdown)
-		     - Startup
+	- Policies
+		- Windows Settings
+			- Scripts (Startup/Shutdown)
+				- Startup
 					- <kbd>Show Files...</kbd>
 						- Drop the scripts in the folder that appears
 					- <kbd>Add...</kbd>
@@ -92,115 +92,115 @@ The Policies to Apply
 						- Repeat for other scripts (Wireless, Printer Queue, etc)
 						- Ensure you do NOT browse AWAY from this folder!
 						- Again, KEEP THE SCRIPTS HERE
-         -   Security Settings
-                 -   Local Policies
-                     -   Security Options
-                         -   Block Microsoft Accounts = **Users cannot add or logon with Microsoft Accounts** (**Requires Edu**)
-			 -   Domain member: Digitally encrypt or sign secure channel data (always) = **Enabled**
-                         -   Interactive Logon: Do not require CTRL+Alt+Del = **ENABLED**
-                         -   Interactive Logon: Prompt user to change password before expiration = **14 days**
-			 -   Microsoft network client: Digitally sign communications (always) = **Enabled**
-			 -   Microsoft network server: Digitally sign communications (always) = **Enabled**
-                         -   User Account Control: Behavior of the elevation prompt for administrators in Admin Approval Mode = **Elevate Without Prompting**
-                         -   User Account Control: Behavior of the elevation prompt for standard users = **Prompt for Credentials**
-                 -   Network List Manager Policies
-                     -   &lt;*SCHOOL CODE*&gt;.ad.sd57.bc.ca
-                         -   Name: **School District \#57 (Prince George) - &lt;School Code&gt;**
-                         -   User permissions: **User cannot change the name**
-                 -   System Services
-                     -   Windows Media Player Network Sharing Service = **Disabled**
-  -   Administrative Templates
-     -   Control Panel
-         -   User Accounts
-             -   Apply the default account picture to all users = **ENABLED**
-         -   Network
-             -   Network Connections
-                 -   Do not show the "Local Access Only" network icon = **Enabled**
-             -   Offline Files
-                 -   Allow or Disallow use of the Offline Files feature = **DISABLE**
-         -   Printers
-             -   Allow Printers to be Published = **DISABLE**
-         -   System
-             -   Enable Windows NTP Server
-	             -   Windows Time Service
-    	             -   Time Providers
-    	                 -   Configure Windows NTP client = **ENABLE,NTPServer=SCHOOLCODE.ad.sd57.bc.ca,Type=NTP**
-    	                 -   Enable Windows NTP client = **ENABLE**
-             -   Logon
-                 -   Show first sign-in animation = **Disable**
-                 -   Turn off Windows Startup sound = **Enable** (Windows 7 only)
-             -   Recovery
-                 -   Allow restore of system to default state = **Disabled** (Win 7 only)
-             -   Remote Assistance
-                 -   Solicited Remote Assistance = **DISABLE**
-             -   Scripts
-	             -   Run logon scripts synchronously = **Enabled**
-	             -   Run startup scripts asynchronously = **Enabled**
-             -   System Restore
-                 -   Turn Off System Restore = **ENABLE**
-             -   User Profiles
-                 -   Only Allow Local User Profiles = **ENABLE**
-                 -   Turn off the advertising ID = **Enable**
-         -   Windows Components
-             -   Add Features to Windows 10
-                 -   Prevent the wizard from running = **Enabled**
-             -   App Runtime
-	         -   Allow Microsoft Accounts to be optional = **Enabled**
-             -   AutoPlay Policies
-	             -   Turn off Autoplay = **Enabled, Turn off Autoplay on CD-ROM and removable media drives**
-             -   Cloud Content
-                 -   Do not show Windows tips = **Enabled**
-                 -   Turn off Microsoft Consumer Experiences = **Enabled**
-             -   Data Collection and Preview Builds
-                 -   Allow Telemetry = **Enabled, 0 (Educational Edition Only)**
-                 -   Disable pre-release features or settings = **Disabled**
-                 -   Do not show feedback notifications = **Enabled**
-                 -   Toggle user control over Inside builds = **Disabled**
-             -   Desktop Gadgets
-                 -   Turn off desktop gadgets = **ENABLE** (Windows 7 only)
-             -   Edge UI
-                 -   Disable help tips = **Enabled**
-             -   File Explorer
-                 -   Do not show the 'new application installed' notification = **Enabled**
-             -   HomeGroup
-                 -   Prevent the Computer from joining a HomeGroup = **ENABLE**
-             -   Internet Explorer
-                 -   Prevent running First Run wizard = **ENABLE**
-                 -   Make proxy settings per-machine = **ENABLE**
-             -   Microsoft Accounts
-	             -   Block all consumer Microsoft account user authentication = **Enabled**
-             -   Microsoft Edge
-	             -   Configure Start pages = **Enabled, `<https://www.sd57.bc.ca/school/SCHOOLCODE/Pages/default.aspx>`** (*Use the angle brackets*)
-	             -   Disable lockdown of Start pages = **Enabled**
-	             -   Keep favorites in sync between Internet Explorer and Microsoft Edge = **Enabled**
-	             -   Prevent the First Run webpage from opening on Microsoft Edge = **Enabled**
-             -   OneDrive (**Education Only**)
-                 -   Prevent the usage of OneDrive for file storage = **Enable**
-                 -   Prevent the usage of OneDrive for file storage on Windows 8.1 = **Enable**
-	     -   Search
-	         -   Allow Cortana = **Disabled**
-             -   Store (**Education only**)
-                 -   Turn off the Store application = **Enabled**
-             -   Sync your settings
-                 -   Do not sync = **Enabled**
-             -   Windows Anytime Upgrade (Windows 7 only - Windows 10 option above matches this entry)
-                 -   Prevent Windows Anytime Upgrade from running = **ENABLE**
-             -   Windows customer experience improvement program
-                 -   Allow corporate redirection of Customer Experience Improvement uploads = **DISABLE**
-             -   Windows Error Reporting
-                 -   Configure Error Reporting = **DISABLE**
-             -   Windows Mail
-                 -   Turn off Windows Mail application = **ENABLE**
-             -   Windows Media Center
-                 -   Do not allow Windows Media Center to run = **ENABLE**
-             -   Windows Media Player
-                 -   Do not show first use dialog boxes = **ENABLE**
-             -   Windows Messenger
-                 -   Do not allow Windows Messenger to be run = **ENABLE**
-             -   Windows UPDATE
-                 -   Configure Automatic Updates = **4: Auto download and schedule the install; Install during automatic maintenance; 4: Every Wednesday; 15:00; Install updates for other Microsoft products**
-             -   Delay Restart for scheduled installations = **ENABLED, 5 minutes**
-             -   Allow non-administrators to receive update notifications = **ENABLED**
+		-   Security Settings
+			-   Local Policies
+				-   Security Options
+					-   Block Microsoft Accounts = **Users cannot add or logon with Microsoft Accounts** (**Requires Edu**)
+					-   Domain member: Digitally encrypt or sign secure channel data (always) = **Enabled**
+					-   Interactive Logon: Do not require CTRL+Alt+Del = **ENABLED**
+					-   Interactive Logon: Prompt user to change password before expiration = **14 days**
+					-   Microsoft network client: Digitally sign communications (always) = **Enabled**
+					-   Microsoft network server: Digitally sign communications (always) = **Enabled**
+					-   User Account Control: Behavior of the elevation prompt for administrators in Admin Approval Mode = **Elevate Without Prompting**
+					-   User Account Control: Behavior of the elevation prompt for standard users = **Prompt for Credentials**
+				-   Network List Manager Policies
+					-   &lt;*SCHOOL CODE*&gt;.ad.sd57.bc.ca
+						-   Name: **School District \#57 (Prince George) - &lt;School Code&gt;**
+						-   User permissions: **User cannot change the name**
+				-   System Services
+					-   Windows Media Player Network Sharing Service = **Disabled**
+		-   Administrative Templates
+			-   Control Panel
+				-   User Accounts
+					-   Apply the default account picture to all users = **ENABLED**
+				-   Network
+					-   Network Connections
+						-   Do not show the "Local Access Only" network icon = **Enabled**
+				-   Offline Files
+					-   Allow or Disallow use of the Offline Files feature = **DISABLE**
+				-   Printers
+					-   Allow Printers to be Published = **DISABLE**
+				-   System
+					-   Enable Windows NTP Server
+						-   Windows Time Service
+							-   Time Providers
+								-   Configure Windows NTP client = **ENABLE,NTPServer=SCHOOLCODE.ad.sd57.bc.ca,Type=NTP**
+								-   Enable Windows NTP client = **ENABLE**
+					-   Logon
+						-   Show first sign-in animation = **Disable**
+						-   Turn off Windows Startup sound = **Enable** (Windows 7 only)
+					-   Recovery
+						-   Allow restore of system to default state = **Disabled** (Win 7 only)
+					-   Remote Assistance
+						-   Solicited Remote Assistance = **DISABLE**
+					-   Scripts
+						-   Run logon scripts synchronously = **Enabled**
+						-   Run startup scripts asynchronously = **Enabled**
+					-   System Restore
+						-   Turn Off System Restore = **ENABLE**
+					-   User Profiles
+						-   Only Allow Local User Profiles = **ENABLE**
+						-   Turn off the advertising ID = **Enable**
+					-   Windows Components
+						-   Add Features to Windows 10
+							-   Prevent the wizard from running = **Enabled**
+						-   App Runtime
+							-   Allow Microsoft Accounts to be optional = **Enabled**
+						-   AutoPlay Policies
+							-   Turn off Autoplay = **Enabled, Turn off Autoplay on CD-ROM and removable media drives**
+						-   Cloud Content
+							-   Do not show Windows tips = **Enabled**
+							-   Turn off Microsoft Consumer Experiences = **Enabled**
+						-   Data Collection and Preview Builds
+							-   Allow Telemetry = **Enabled, 0 (Educational Edition Only)**
+							-   Disable pre-release features or settings = **Disabled**
+							-   Do not show feedback notifications = **Enabled**
+							-   Toggle user control over Inside builds = **Disabled**
+						-   Desktop Gadgets
+							-   Turn off desktop gadgets = **ENABLE** (Windows 7 only)
+						-   Edge UI
+							-   Disable help tips = **Enabled**
+						-   File Explorer
+							-   Do not show the 'new application installed' notification = **Enabled**
+						-   HomeGroup
+							-   Prevent the Computer from joining a HomeGroup = **ENABLE**
+						-   Internet Explorer
+							-   Prevent running First Run wizard = **ENABLE**
+							-   Make proxy settings per-machine = **ENABLE**
+						-   Microsoft Accounts
+							-   Block all consumer Microsoft account user authentication = **Enabled**
+						-   Microsoft Edge
+							-   Configure Start pages = **Enabled, `<https://www.sd57.bc.ca/school/SCHOOLCODE/Pages/default.aspx>`** (*Use the angle brackets*)
+							-   Disable lockdown of Start pages = **Enabled**
+							-   Keep favorites in sync between Internet Explorer and Microsoft Edge = **Enabled**
+							-   Prevent the First Run webpage from opening on Microsoft Edge = **Enabled**
+						-   OneDrive
+							-   Prevent the usage of OneDrive for file storage = **Enable**
+							-   Prevent the usage of OneDrive for file storage on Windows 8.1 = **Enable**
+						-   Search
+							-   Allow Cortana = **Disabled**
+						-   Store (**Education only**)
+							-   Turn off the Store application = **Enabled**
+						-   Sync your settings
+							-   Do not sync = **Enabled**
+						-   Windows Anytime Upgrade (Windows 7 only - Windows 10 option above matches this entry)
+							-   Prevent Windows Anytime Upgrade from running = **ENABLE**
+						-   Windows customer experience improvement program
+							-   Allow corporate redirection of Customer Experience Improvement uploads = **DISABLE**
+						-   Windows Error Reporting
+							-   Configure Error Reporting = **DISABLE**
+						-   Windows Mail
+							-   Turn off Windows Mail application = **ENABLE**
+						-   Windows Media Center
+							-   Do not allow Windows Media Center to run = **ENABLE**
+						-   Windows Media Player
+							-   Do not show first use dialog boxes = **ENABLE**
+						-   Windows Messenger
+							-   Do not allow Windows Messenger to be run = **ENABLE**
+						-   Windows UPDATE
+							-   Configure Automatic Updates = **4: Auto download and schedule the install; Install during automatic maintenance; 4: Every Wednesday; 15:00; Install updates for other Microsoft products**
+							-   Delay Restart for scheduled installations = **ENABLED, 5 minutes**
+							-   Allow non-administrators to receive update notifications = **ENABLED**
 
 Default\_user
 -------------
