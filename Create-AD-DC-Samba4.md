@@ -8,11 +8,13 @@ If your intention is to create a new DC to add to an existing AD domain, then
 this document is **not the correct guide to follow**. Instead, you want
 `How to Add a New Samba4 Domain Controller (DC) To An Existing Samba4 AD`.
 
-__Version:__ 6.0
+__Version:__ 6.1
 
-__Updated:__ July 2, 2017
+__Updated:__ July 7, 2017
 
 __Change Log:__
++ v.6.1, released July 7, 2017:
+  - Configured bind9 to disallow zone transfers (Matt F.)
 + v.6.0, released July 2, 2017:
   - Added instructions to install cron.d and utility scripts from git repo.
 + v.5.0, released June 28, 2017:
@@ -413,11 +415,10 @@ echo "${PRIVATE_DIR}"
 include "${PRIVATE_DIR}/named.conf";
 ```
 Be certain to replace the placeholder `${PRIVATE_DIR}` with its actual value.
-+ Insert the following line into the `options {}` block within
++ Insert the following lines into the `options {}` block within
   __/etc/bind/named.conf.options__:
 ```
 tkey-gssapi-keytab "${PRIVATE_DIR}/dns.keytab";
-
 allow-transfer { "none"; };
 ```
 Be certain to replace the placeholder `${PRIVATE_DIR}` with its actual value.
