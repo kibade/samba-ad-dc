@@ -417,6 +417,8 @@ Be certain to replace the placeholder `${PRIVATE_DIR}` with its actual value.
   __/etc/bind/named.conf.options__:
 ```
 tkey-gssapi-keytab "${PRIVATE_DIR}/dns.keytab";
+
+allow-transfer { "none"; };
 ```
 Be certain to replace the placeholder `${PRIVATE_DIR}` with its actual value.
 + As root, run the following:
