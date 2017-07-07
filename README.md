@@ -1,7 +1,12 @@
 README
 ===
 
-Version 1.00 - Initial Commit
+Change Log:
++ v.1.1 (S.Monai, July 7, 2017):
+  - Added clarification to Steps 4 & 6, explicitly stating the need to create new VMs.
+  - Added clarification to Steps 5 & 7, explicitly stating fs1 as the target of the doc.
++ Version 1.00
+  - Initial Commit (L.Barone)
 
 Description - Moving forward with Samba AD, you need to do certain things in the correct order. This document will guide you through the process. Please ***DO NOT MOVE ON UNTIL YOU COMPLETE THE PREVIOUS STEPS!***
 
@@ -16,18 +21,24 @@ Description - Moving forward with Samba AD, you need to do certain things in the
 	- Required to setup Domain Controllers for File Server to authenticate against
 	- Ensure you have enabled Virtual Machine Support turned on in your server's BIOS for speed.
 4. [Create AD-DC Samba4](https://github.com/smonaica/samba-ad-dc/blob/master/Create-AD-DC-Samba4.md)
+	- FIRST: Create a new VM and install minimal Debian Stretch (64-bit arch) on it.
+	- THEN: Follow the instructions in the document linked above.
 	- This will setup your first domain controller in your forest
 	- Ensure all your tests succeed before continuing on
 	- Reboot your host to ensure that the DC VM will start up properly
 5. [Add Member Server to Samba4 AD](https://github.com/smonaica/samba-ad-dc/blob/master/Add-Member-Server-to-Samba4-AD.md)
+	- Use the document linked above to join the file server `fs1` to the domain.
 	- This will get your File Server connecting to the AD for authentication
 	- Do not continue until this is complete. We still have the ability to start over until this is completed
 	- Once all the tests have passed, move on
 6. [Add DC to Samba4 AD](https://github.com/smonaica/samba-ad-dc/blob/master/Add-DC-to-Samba4-AD.md)
+	- FIRST: Create a new VM and install minimal Debian Stretch (64-bit arch) on it.
+	- THEN: Follow the instructions in the document linked above.
 	- This will configure the replication between the two DCs
 	- Once replication is working, you will be safe from a single server's failure for authentication and machine accounts (i.e. you won't need to run around to each machine and rejoin them to the domain)
 	- Before continuing, ensure your tests pass - including replication and DNS checks.
 7. [Creating Shares](https://github.com/smonaica/samba-ad-dc/blob/master/Creating%20shares.md)
+	- Use the document linked above on the file server `fs1`.
 	- Setup your folder structure on your File Server, and set the correct permissions
 	- Do this before creating new Domain users on your network
 8. [Group Policy Guide](https://github.com/smonaica/samba-ad-dc/blob/master/Group-Policy-Guide.md)
