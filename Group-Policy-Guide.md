@@ -27,14 +27,6 @@ Samba recommends a few certain items in regards to Group Policy with Samba:
 - Password policies do NOT get set via Group Policy. Use `samba-tool` instead to set it.
 - Do not adjust the Default Domain Policy. It must be left at its default.
 
-Preparing to Manage Group Policies
----
-1.  Install the RSAT (Remote System Administration Tools) for your version of Windows (NOTE: many policies for Windows 10 require you to login with a Windows 10 Pro or higher machine, and therefore, you need Windows 10 to set the GPs for those machines)
-    
-    [[Windows 10 RSAT](https://www.microsoft.com/en-us/download/details.aspx?id=45520)] - [[Windows 8.1 RSAT](https://www.microsoft.com/en-ca/download/details.aspx?id=39296)] - [[Windows 7 RSAT](https://www.microsoft.com/en-ca/download/details.aspx?id=7887)]
-2. (Windows 7 and 8.x) After installing the above tools, go to the **Control Panel -> Programs and Features -> Turn Windows Features on and off**. Search the list for *Remote Server Administration Tools*, and enable the option. After clicking <kbd>OK</kbd>, you may need to reboot your computer.
-3. The tools should be installed under All Programs->Windows Server Admin Tools (Win 10) or Administrative Tools (Win 7/8.x)
-
 To create a new policy:
 ---
 1.  Run `gpmc.msc` as a Domain Admin user.

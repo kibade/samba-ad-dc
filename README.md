@@ -10,6 +10,16 @@ Change Log:
 
 Description - Moving forward with Samba AD, you need to do certain things in the correct order. This document will guide you through the process. Please ***DO NOT MOVE ON UNTIL YOU COMPLETE THE PREVIOUS STEPS!***
 
+Preparing to Manage Active Directory
+---
+1.  Install the RSAT (Remote System Administration Tools) for your version of Windows (NOTE: many policies for Windows 10 require you to login with a Windows 10 Pro or higher machine, and therefore, you need Windows 10 to set the GPs for those machines)
+    
+    [[Windows 10 RSAT](https://www.microsoft.com/en-us/download/details.aspx?id=45520)] - [[Windows 8.1 RSAT](https://www.microsoft.com/en-ca/download/details.aspx?id=39296)] - [[Windows 7 RSAT](https://www.microsoft.com/en-ca/download/details.aspx?id=7887)]
+2. (Windows 7 and 8.x) After installing the above tools, go to the **Control Panel -> Programs and Features -> Turn Windows Features on and off**. Search the list for *Remote Server Administration Tools*, and enable the option. After clicking <kbd>OK</kbd>, you may need to reboot your computer.
+3. The tools should be installed under All Programs->Windows Server Admin Tools (Win 10) or Administrative Tools (Win 7/8.x)
+
+Order of Operations:
+=
 1. [IP Address Scheme](https://github.com/smonaica/samba-ad-dc/blob/master/IP%20Address%20Scheme.md)
 	- You need to make sure you have your Address Scheme known, and up to date. Major changes may occur.
 	- Map out your current network, and adjust as necessary to move to the correct address range.
