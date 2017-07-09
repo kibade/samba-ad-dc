@@ -120,19 +120,19 @@ server bu1 iburst burst
 + Identify all **physical** servers (**not including** this server) at the
   local site that are running (or are planned to be running) NTP servers
   for the network.
-+ Configure all such NTP servers as a peers to each other.
-+ Example: Assume that this server is `fs1` (the main file server), and
-  that there is one other physical server on the LAN, named `bu1` (the
-  backups server).
++ Configure all such NTP servers as **peers** to this server.
++ Example: Assume that this server is `fs1`, and that there is one other
+  physical server on the LAN, named `bu1`.
 + With the above assumptions, you would append the following lines to the
   end of __/etc/ntp.conf__ on this physical server:
 ```
 peer bu1
 restrict bu1 kod limited notrap nomodify noquery
 ```
-(Of course, `fs1` will also be configured as a peer of the `bu1` server,
-by appending the analgous lines to __/etc/ntp.conf__ on `bu1`. But that
-is done when `bu1` is configured, not now.)
+This configures `bu1` as a peer of this server. (Of course, `fs1` will also
+be configured as a peer of the `bu1` server, by appending the analgous lines
+to __/etc/ntp.conf__ on `bu1`. But that is done when `bu1` is configured,
+not now.)
 + Essentially, all physical servers running NTP at a site will name all the
   other physical servers at the same site as peers in their respective
   __/etc/ntp.conf__ files.
