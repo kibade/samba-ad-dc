@@ -8,11 +8,13 @@ If your intention is to create a new DC to add to an existing AD domain, then
 this document is **not the correct guide to follow**. Instead, you want
 `How to Add a New Samba4 Domain Controller (DC) To An Existing Samba4 AD`.
 
-__Version:__ 6.1
+__Version:__ 7.0
 
-__Updated:__ July 7, 2017
+__Updated:__ July 9, 2017
 
 __Change Log:__
++ v.7.0, released July 9, 2017:
+  - Updated the NTP configuration section, pointing to a new doc.
 + v.6.1, released July 7, 2017:
   - Configured bind9 to disallow zone transfers (Matt F.)
 + v.6.0, released July 2, 2017:
@@ -235,7 +237,7 @@ reboot
 ```
 apt-get update
 apt-get install samba winbind ntp krb5-user dnsutils ldap-utils \
-        ldb-tools smbclient libnss-winbind acl rsync bind9
+        ldb-tools smbclient libnss-winbind acl rsync bind9 ca-certificates
 ```
 When/if asked questions related to kerberos domain/realm, simply accept
 the defaults, since kerberos will be reconfigured later, anyway.
@@ -282,71 +284,9 @@ find "${LOCKDIR}" "${STATEDIR}" "${CACHEDIR}" "${PRIVATE_DIR}" \
 
 ---
 ### Configure time synch
-+ As root, run the following:
-```
-STATEDIR=$(smbd -b |egrep STATEDIR |cut -f2- -d':' |sed 's/^ *//')
-echo "${STATEDIR}"
-```
-+ Replace the entire contents of __/etc/ntp.conf__ with the following:
-```
-##
-## Server control options
-##
-
-tinker panic 0
-
-driftfile /var/lib/ntp/ntp.drift
-statsdir /var/log/ntpstats/
-ntpsigndsocket ${STATEDIR}/ntp_signd/
-
-statistics loopstats peerstats clockstats
-filegen loopstats  file loopstats  type day enable
-filegen peerstats  file peerstats  type day enable
-filegen clockstats file clockstats type day enable
-
-tos orphan 5
-
-##
-## Upstream time servers
-##
-
-server ${NTP_SERVER1} iburst burst
-pool 0.pool.ntp.org iburst burst
-pool 1.pool.ntp.org iburst burst
-pool 2.pool.ntp.org iburst burst
-pool 3.pool.ntp.org iburst burst
-
-##
-## Access control lists
-##
-
-# Base case: Exchange time with all, but disallow configuration or peering.
-restrict default kod limited notrap nomodify noquery nopeer
-
-# To allow pool discovery, apply same rules as base case, but do allow peering.
-restrict source kod limited notrap nomodify noquery
-
-# Allow localhost full control over the time service.
-restrict 127.0.0.1
-restrict ::1
-
-# Provide AD signed time sync to the local LAN
-restrict ${NET_ADDRESS} mask ${SUBNET_MASK} kod limited notrap nomodify noquery nopeer mssntp
-```
-Be certain to replace the placeholders `${STATEDIR}`, `${NTP_SERVER1}`,
-`${NET_ADDRESS}`, and `${SUBNET_MASK}` with their actual values.
-
-The `tinker panic 0` line is needed __if and only if__ the machine is a VM.
-In a non-VM context, the `tinker panic 0` line should be removed.
-
-+ As root, run the following:
-```
-systemctl stop ntp
-systemctl start ntp
-systemctl status ntp
-```
-The last line should report that `ntp` is `active (running)`. Otherwise, there
-is likely a typo in __/etc/ntp.conf__ that needs to be fixed.
++ Configure the NTP service on this server by following the instructions
+  described in the following document:
+https://github.com/smonaica/samba-ad-dc/raw/master/NTP-Configuration.md
 
 ---
 ### Re-configure DNS resolution
@@ -613,7 +553,7 @@ description: Student Users
 ```
 ldbadd --url=/var/lib/samba/private/sam.ldb /root/ous.txt
 ```
-Expect to see something like `6 records created`.
+Expect to see `Added 6 records successfully`.
 If no errors are reported, then your OUs have been added successfully.
 
 ---
