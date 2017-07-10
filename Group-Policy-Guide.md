@@ -257,7 +257,7 @@ Staff\_Users\_Policy
             -   Drive Maps
                 -   New-&gt; Mapped Drive
                     -   Action: Create
-                    -   Location: \\\\FS1\\Staff
+                    -   Location: \\\\fs1.SCHOOLCODE.ad.sd57.bc.ca\\Staff
                     -   Reconnect: Yes
                     -   Label as: Staff Drive
                     -   Use: S: Drive
