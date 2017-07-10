@@ -56,7 +56,7 @@ Order of Operations:
 	- When computers connect to your domain, they will be further along being setup correctly if this is in place first
 9. [Win 10 Install Guide](https://github.com/smonaica/samba-ad-dc/blob/master/Win-10-Install-Guide.md)
 	- If using Windows 10, follow the guide. It relies on AD in place, as well as Group Policies being applied
-10. FOG Install Guide (to be created)
+10. [FOG Install Guide](https://github.com/smonaica/samba-ad-dc/blob/master/FOG%20Install%20Guide.md)
 	- Install FOG to VM
 	- Test capturing and deploying with your new Windows 10 Installation
 	- Ensure FOG service is running and you can deploy Snapins as required
