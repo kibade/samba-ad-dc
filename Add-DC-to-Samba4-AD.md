@@ -274,7 +274,7 @@ find "${LOCKDIR}" "${STATEDIR}" "${CACHEDIR}" "${PRIVATE_DIR}" \
 ### Configure time synch
 + Configure the NTP service on this server by following the instructions
   described in the following document:
-https://github.com/smonaica/samba-ad-dc/raw/master/NTP-Configuration.md
+https://github.com/smonaica/samba-ad-dc/blob/master/NTP-Configuration.md
 
 ---
 ### Re-configure DNS resolution
