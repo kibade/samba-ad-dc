@@ -10,11 +10,13 @@ server", or a "member server".
 Domain-member servers are typically used to serve file shares in an AD
 domain, since Directory Controllers are not recommended to fill that role.
 
-__Version:__ 5.1
+__Version:__ 6.0
 
-__Updated:__ July 6, 2017
+__Updated:__ July 9, 2017
 
 __Change Log:__
++ v.6.0, released July 9, 2017:
+  - Updated the NTP configuration section, pointing to a new doc.
 + v.5.1, released July 6, 2017:
   - Updated `smb.conf` file for client/server signing to be mandatory.
 + v.5.0, released June 28, 2017:
@@ -252,61 +254,9 @@ find "${LOCKDIR}" "${STATEDIR}" "${CACHEDIR}" "${PRIVATE_DIR}" \
 
 ---
 ### Configure time synch
-+ Replace the contents of __/etc/ntp.conf__ with the following:
-```
-##
-## Server control options
-##
-
-tinker panic 0
-
-driftfile /var/lib/ntp/ntp.drift
-statsdir /var/log/ntpstats/
-
-statistics loopstats peerstats clockstats
-filegen loopstats  file loopstats  type day enable
-filegen peerstats  file peerstats  type day enable
-filegen clockstats file clockstats type day enable
-
-tos orphan 5
-
-##
-## Upstream time servers
-##
-
-server ${NTP_SERVER1} iburst burst
-pool 0.pool.ntp.org iburst burst
-pool 1.pool.ntp.org iburst burst
-pool 2.pool.ntp.org iburst burst
-pool 3.pool.ntp.org iburst burst
-
-##
-## Access control lists
-##
-
-# Base case: Exchange time with all, but disallow configuration or peering.
-restrict default kod limited notrap nomodify noquery nopeer
-
-# To allow pool discovery, apply same rules as base case, but do allow peering.
-restrict source kod limited notrap nomodify noquery
-
-# Allow localhost full control over the time service.
-restrict 127.0.0.1
-restrict ::1
-```
-Be certain to replace the placeholder `${NTP_SERVER1}` with its actual value.
-
-The `tinker panic 0` line is needed if and only if the machine is a VM.
-In a non-VM context, the `tinker panic 0` line should be removed.
-
-+ As root, run the following:
-```
-systemctl stop ntp
-systemctl start ntp
-systemctl status ntp
-```
-The last line should report that `ntp` is `active (running)`. Otherwise, there
-is likely a typo in __/etc/ntp.conf__ that needs to be fixed.
++ Configure the NTP service on this server by following the instructions
+  described in the following document:
+https://github.com/smonaica/samba-ad-dc/blob/master/NTP-Configuration.md
 
 ---
 ### Re-configure DNS resolution
