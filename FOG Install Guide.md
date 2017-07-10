@@ -1,7 +1,15 @@
 Installing FOG on Debian Stretch
 ===
 
-Version 1.00 - Initial Commit
+Version: 1.1
+
+Updated: July 9, 2017
+
+Change Log:
++ v.1.1, July 9, 2017
+  - Added "Install and configure NTP".
+  - Converted file to Windows format (CRLF line-endings).
++ v.1.0 - Initial Commit
 
 Prerequisites
 -
@@ -25,6 +33,7 @@ FOG Install
 -
 - Install required packages to prepare
 	- As root, execute `apt-get update && apt-get install ssh ca-certificates vim`
+	- Install and configure NTP: https://github.com/smonaica/samba-ad-dc/blob/master/NTP-Configuration.md
 	- Ensure you can SSH from your workstation before continuing
 	- Set a static IP address for the server (FOG standard IP is 10.YY.10.2)
 	- Ensure you can connect by name and IP address.
@@ -99,3 +108,4 @@ Setting up FOG's configuration
 
 ---
 You can now start creating images, collecting images, registering hosts, etc.
+
