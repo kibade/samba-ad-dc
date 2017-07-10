@@ -1,9 +1,12 @@
 # Installing VirtualBox for Headless Operation on a Debian Host
-__Version:__ 3.0
+__Version:__ 4.0
 
-__Updated:__ July 1, 2017
+__Updated:__ July 9, 2017
 
 __Change Log:__
++ v.4.0, released July 9, 2017:
+  - Updated the "Time Service (NTP)" section, to use the new doc.
+  - Updated the "virtualbox-guest-vms helper" section, to point to the repo.
 + v.3.0, released July 1, 2017:
   - Updated the "Creating VMs" section, with new info and recommendations.
 + v.2.1, released June 24, 2017:
@@ -186,18 +189,18 @@ exit
 + As root, run the following:
 ```
 cd /etc/init.d/
-rsync -aP tech@duch.sd57.bc.ca:/etc/init.d/virtualbox-guest-vms ./
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/virtualbox-guest-vms"
 chown root:root virtualbox-guest-vms
 chmod 0755 virtualbox-guest-vms
 cd /etc/systemd/system/
-rsync -aP tech@duch.sd57.bc.ca:/etc/systemd/system/virtualbox-guest-vms.service ./
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/virtualbox-guest-vms.service"
 chown root:root virtualbox-guest-vms.service
 chmod 0644 virtualbox-guest-vms.service
 systemctl enable virtualbox-guest-vms.service
 systemctl start virtualbox-guest-vms.service
+systemctl status virtualbox-guest-vms.service
 ```
-Note that the `virtualbox-guest-vms` and `virtualbox-guest-vms.service` files
-can also be found in the __scripts__ subdirectory of this project's git repo.
+The last command above should report that the service is `active (exited)`.
 
 ---
 ### Install and Configure Time Service (NTP) to serve to VM guests
@@ -206,72 +209,9 @@ can also be found in the __scripts__ subdirectory of this project's git repo.
 + Ideally, two or more physical hosts should be arranged into a "mesh"
   or "clique" of time peer servers, and VM guests should list all such
   servers in their own NTP client configurations.
-+ Replace the entire content of __/etc/ntp.conf__ with the following:
-```
-##
-## Server control options
-##
-
-driftfile /var/lib/ntp/ntp.drift
-statsdir /var/log/ntpstats/
-
-statistics loopstats peerstats clockstats
-filegen loopstats  file loopstats  type day enable
-filegen peerstats  file peerstats  type day enable
-filegen clockstats file clockstats type day enable
-
-tos orphan 5
-
-##
-## Upstream time servers
-##
-
-server time.sd57.bc.ca iburst burst
-pool 0.pool.ntp.org iburst burst
-pool 1.pool.ntp.org iburst burst
-pool 2.pool.ntp.org iburst burst
-pool 3.pool.ntp.org iburst burst
-
-##
-## Access control lists
-##
-
-# Base case: Exchange time with all, but disallow configuration or peering.
-restrict default kod limited notrap nomodify noquery nopeer
-
-# To allow pool discovery, apply same rules as base case, but do allow peering.
-restrict source kod limited notrap nomodify noquery
-
-# Allow localhost full control over the time service.
-restrict 127.0.0.1
-restrict ::1
-
-##
-## Peers: Physical hosts running NTP to serve time.
-## Connect peers into a mesh (or clique), to improve time quality/stability.
-##
-
-peer ${PEER_1}
-restrict ${PEER_1} kod limited notrap nomodify noquery
-
-peer ${PEER_2}
-restrict ${PEER_2} kod limited notrap nomodify noquery
-
-...
-
-peer ${PEER_N}
-restrict ${PEER_N} kod limited notrap nomodify noquery
-```
-Replace the placeholders `${PEER_1}`, `${PEER_2}`, ..., `${PEER_N}` with
-either the IP addresses or the DNS names of the **physical** hosts on the LAN
-serving time to clients via NTP.
-
-Each such peer needs to list all other peers in its __/etc/ntp.conf__
-file, as demonstrated above, in order to create a mesh network between the
-entire clique of peers.
-
-DO NOT include VMs as peers. Only physical hosts should be made peers, since
-VMs are almost never stable timekeepers.
++ Configure the NTP service on this server by following the instructions
+  described in the following document:
+https://github.com/smonaica/samba-ad-dc/blob/master/NTP-Configuration.md
 
 ---
 ### Initial setup is done
