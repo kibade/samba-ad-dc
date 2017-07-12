@@ -49,6 +49,10 @@ vdi_variant="fixed"
 # Full path name of the LV device to be the virtual HDD. It must exist.
 lvm_lv_device="/dev/vg0/vm_$vm"
 
+# Storage bus type. Choices are: ide, sata
+# The 'ide' type is more stable, so it's the default. Use 'sata' with caution.
+storage_bus_type="ide"
+
 ###############################################################################
 ### End of Config Variables
 ###############################################################################
@@ -144,6 +148,25 @@ case "$hdd_type" in
 		;;
 esac
 
+##
+## Check the storage bus type.
+##
+
+case "$storage_bus_type" in
+
+	"ide"|"sata")
+		:  # Ok
+		;;
+	*)
+		echo
+		echo "Configuration error: Unknown storage bus type: '$storage_bus_type'"
+		echo
+		echo "Script aborted."
+		echo
+		exit 5
+		;;
+esac
+
 if [ "${os_type:0:7}" = "Windows" ]; then
 
 ##
@@ -199,18 +222,6 @@ vboxmanage modifyvm "$vm" \
 	--autostart-enabled on \
 	--autostart-delay $autostart_delay_seconds
 
-vboxmanage storagectl "$vm" \
-	--name SATA \
-	--add sata \
-	--portcount 2 \
-	--hostiocache on
-
-vboxmanage storageattach "$vm" \
-	--storagectl SATA \
-	--port 1 \
-	--type dvddrive \
-	--medium "$boot_iso"
-
 if [ ! -e "$disk_file" ]; then
 
 	echo
@@ -244,11 +255,53 @@ else
 
 fi
 
-vboxmanage storageattach "$vm" \
-	--storagectl SATA \
-	--port 0 \
-	--type hdd \
-	--medium "$disk_file"
+emptydrive_cmd=""
+
+case "$storage_bus_type" in
+
+	"ide")
+		vboxmanage storagectl "$vm" \
+			--name IDE \
+			--add ide
+
+		vboxmanage storageattach "$vm" \
+			--storagectl IDE \
+			--port 0 \
+			--device 0 \
+			--type hdd \
+			--medium "$disk_file"
+
+		vboxmanage storageattach "$vm" \
+			--storagectl IDE \
+			--port 1 \
+			--device 0 \
+			--type dvddrive \
+			--medium "$boot_iso"
+
+		emptydrive_cmd="vboxmanage storageattach \""$vm\"" --storagectl IDE --port 1 --device 0 --medium emptydrive"
+		;;
+	"sata")
+		vboxmanage storagectl "$vm" \
+			--name SATA \
+			--add sata \
+			--portcount 2 \
+			--hostiocache on
+
+		vboxmanage storageattach "$vm" \
+			--storagectl SATA \
+			--port 0 \
+			--type hdd \
+			--medium "$disk_file"
+
+		vboxmanage storageattach "$vm" \
+			--storagectl SATA \
+			--port 1 \
+			--type dvddrive \
+			--medium "$boot_iso"
+
+		emptydrive_cmd="vboxmanage storageattach \""$vm\"" --storagectl SATA --port 1 --medium emptydrive"
+		;;
+esac
 
 echo
 echo "VM \"$vm\" created. Ready for first boot and OS install."
@@ -261,6 +314,6 @@ echo "Connect to port $console_rdp_port with an RDP client, and install the OS."
 echo
 echo "Later, remove the boot iso from the virtual DVD drive, as follows:"
 echo
-echo "    vboxmanage storageattach \"$vm\" --storagectl SATA --port 1 --medium emptydrive"
+echo "    $emptydrive_cmd"
 echo
 
