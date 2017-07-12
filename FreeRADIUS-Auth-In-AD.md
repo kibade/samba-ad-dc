@@ -4,11 +4,13 @@ __Summary:__
 This document describes a sequence of steps intended to configure FreeRADIUS
 to authenticate users against an Active Directory (AD) domain.
 
-__Version:__ 1.0
+__Version:__ 2.0
 
-__Updated:__ June 24, 2017
+__Updated:__ July 12, 2017
 
 __Change Log:__
++ v.1.1, released July 12, 2017:
+  - Added a section to config the wireless controller for MSCHAPv2.
 + v.1.0, released June 24, 2017:
   - Updated the "Get ready to block users ..." section for clarity.
   - Tweaked the formatting of recent additions.
@@ -67,6 +69,13 @@ mschap {
 ```
 Be certain to replace the placeholder `${DOMAIN}` with its actual value (e.g.
 "SFG").
+
+---
+### Configure the Wireless Controller to use MSCHAPv2 with RADIUS
++ Login to the wireless controller's administration website.
++ Click on: Home -> Authentication -> Radius Profiles -> Default.
++ In the `Settings` section, set the `Authentication Method` to `MSCHAPv2`.
++ Click `Save`.
 
 ---
 ### Get ready to block users by Username
