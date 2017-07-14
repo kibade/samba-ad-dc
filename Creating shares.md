@@ -6,7 +6,7 @@ Setup Domain Admin Permissions
 -
 - Grant the required rights to the Domain Admins
 
-`net rpc rights grant "<SCHOOLCODE>\Domain Admins" SeDiskOperatorPrivilege -U "<SCHOOLCODE>\Administrator"`
+`net rpc rights grant "<SCHOOLCODE>\Domain Admins" SeDiskOperatorPrivilege -U "<SCHOOLCODE>\Administrator"` <br />
 `net rpc rights grant "<SCHOOLCODE>\Domain Admins" SeSecurityPrivilege -U "<SCHOOLCODE>\Administrator"`
 
 - Add yourself to the Domain Admins group (to be discussed)
