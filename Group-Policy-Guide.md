@@ -1,7 +1,8 @@
 Group Policies
 ==============
-*Version 0.4*
+*Version 0.5*
 
+- Added section for creating Group Policy Central Store
 - Create Starter GPO for Firewall rules
 	- Windows Firewall rules have been MOVED
 - Added notes from Samba about Password Policy
@@ -32,16 +33,16 @@ To create a new policy:
 1.  Run `gpmc.msc` as a Domain Admin user.
 2.  Expand the Forest \\ Domains \\ &lt;*School Code*&gt;.ad.sd57.bc.ca
 3.  Ensure you are on your primary Domain Controller. Right-click on `SCHOOLCODE.ad.sd57.bc.ca` and click *Change Domain Controller...*. Ensure that the "Current domain controller" is your primary DC. If it's on your secondary DC, and your primary DC is up, we do not believe the SysVol Syncing Script will copy it the other way.
-4.  Right-click on the domain, choose "**Create a GPO in this domain, and
-    Link it here…**".
-5.  Name the GPO to indicate what section you're in (i.e.
-    "*Default\_Computer*)
+4.  Right-click on the domain, choose "**Create a GPO in this domain, and Link it here…**".
+5.  Name the GPO to indicate what section you're in (i.e. "*Default\_Computer*)
 6.  After you click <kbd>OK</kbd>, right-click on the new GPO and click **Edit...**. You'll be brought in to the Group Policy Management Editor. Make your changes, then close the window. You settings should apply to the Domain Controller right away.
 
 If you need to see your settings take effect right away (i.e. test workstation), you can run `gpupdate /force` to download the latest GPOs for your session. This command **does not require Admin Privileges**. If that does not work, log off and back on. Finally, try rebooting. If that still does not work, then ensure your computer is talking to the domain controller with the GPOs. If you have dual-domain controllers setup (recommended), you may need to wait for your `cron` job to start and finish to copy the policies to all the domain controllers.
 
 Forest Structure
 --- 
+
+*SCHOOLCODE*.ad.sd57.bc.ca  
 | -- Users  
 | -- Computers  
 | -- Domain Controllers  
@@ -85,8 +86,9 @@ The Policies to Apply
 		- Windows Settings
 			- Scripts (Startup/Shutdown)
 				- Startup
-					- <kbd>Show Files...</kbd>
+					- Click on the <kbd>Show Files...</kbd> button
 						- Drop the scripts in the folder that appears
+						- You may use `.cmd` and `.ps1` scripts
 					- <kbd>Add...</kbd>
 						- <kbd>Browse...</kbd> and select the script
 						- Repeat for other scripts (Wireless, Printer Queue, etc)
@@ -309,3 +311,28 @@ Items with an asterisk (`*`) are the recommended policies to set. To change sett
     --reset-account-lockout-after=<integer>
     
 To view a full help of the commands, execute `samba-tool domain passwordsettings set --help` as root.
+
+---
+
+Creating a Group Policy Central Store
+---
+
+A Group Policy *Central Store* is where you can have all the group policy definition files (`*.adm{x,l}`) files stored, and be able to use them anywhere in your domain. Applications that support Group Policy settings should come with two files: The `.admx` file that defines the settings; and the `.adml` file that defines the language strings for each setting.
+
+To get setup, you need to first copy your local Group Policy Definitions and Language files to the server. Because of replication being a scheduled one-way job, you will need to force the command to connect to `dc1` (or your primary domain controller). This will assume you are on the latest version of Windows 10, logged in as the Domain Administrator (*Replace `SCHOOLCODE` with your 3-4 character code*):
+
+```
+    mkdir \\dc1.SCHOOLCODE.ad.sd57.bc.ca\sysvol\SCHOOLCODE.ad.sd57.bc.ca\Policies\PolicyDefinitions
+    robocopy %SystemRoot%\PolicyDefinitions \\dc1.SCHOOLCODE.ad.sd57.bc.ca\sysvol\SCHOOLCODE.ad.sd57.bc.ca\Policies\PolicyDefinitions /s /xo
+
+```
+
+Expect to see around 400 files copied. Open the `PolicyDefinitions` folder on the server in Windows Explorer. Any of the `.ADM[x]` files you receive can go into this folder. Drag any language definition files into your `\PolicyDefinitions\EN-US\` directory on the domain controller.
+
+Examples of Policy Definitions you can download:
+
+- [Adobe Reader XI](ftp://ftp.adobe.com/pub/adobe/reader/win/11.x/11.0.00/misc/)
+- [Adobe Acrobat XI](ftp://ftp.adobe.com/pub/adobe/acrobat/win/11.x/11.0.00/misc/)
+- [Adobe Reader DC 2017 (Classic Track)](ftp://ftp.adobe.com/pub/adobe/reader/win/Acrobat2017/misc/)
+- [Microsoft Office 2016](https://www.microsoft.com/en-ca/download/details.aspx?id=49030)
+- [Microsoft Office 2013](https://www.microsoft.com/en-ca/download/details.aspx?id=35554)
