@@ -331,8 +331,8 @@ Expect to see around 400 files copied. Open the `PolicyDefinitions` folder on th
 
 Examples of Policy Definitions you can download:
 
-- [Adobe Reader XI](ftp://ftp.adobe.com/pub/adobe/reader/win/11.x/11.0.00/misc/)
-- [Adobe Acrobat XI](ftp://ftp.adobe.com/pub/adobe/acrobat/win/11.x/11.0.00/misc/)
-- [Adobe Reader DC 2017 (Classic Track)](ftp://ftp.adobe.com/pub/adobe/reader/win/Acrobat2017/misc/)
+- Adobe Reader XI (ftp://ftp.adobe.com/pub/adobe/reader/win/11.x/11.0.00/misc/)
+- Adobe Acrobat XI (ftp://ftp.adobe.com/pub/adobe/acrobat/win/11.x/11.0.00/misc/)
+- Adobe Reader DC 2017 (Classic Track) (ftp://ftp.adobe.com/pub/adobe/reader/win/Acrobat2017/misc/)
 - [Microsoft Office 2016](https://www.microsoft.com/en-ca/download/details.aspx?id=49030)
 - [Microsoft Office 2013](https://www.microsoft.com/en-ca/download/details.aspx?id=35554)
