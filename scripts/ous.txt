@@ -16,20 +16,46 @@ objectClass: top
 objectClass: organizationalunit
 description: Staff Users
 
-dn: OU=Student,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+dn: OU=Students,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
 changetype: add
 objectClass: top
 objectClass: organizationalunit
 description: Student OU
 
-dn: OU=Student_Computers,OU=Student,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+dn: OU=Student_Computers,OU=Students,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
 changetype: add
 objectClass: top
 objectClass: organizationalunit
 description: Student Computers
 
-dn: OU=Student_Users,OU=Student,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+dn: OU=Student_Users,OU=Students,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
 changetype: add
 objectClass: top
 objectClass: organizationalunit
 description: Student Users
+
+dn: OU=2018,OU=Student_Users,OU=Students,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+Description: Students graudating in 2018
+
+dn: OU=2019,OU=Student_Users,OU=Students,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+Description: Students graudating in 2019
+
+
+dn: OU=2020,OU=Student_Users,OU=Students,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+Description: Students graudating in 2020
+
+dn: OU=2021,OU=Student_Users,OU=Students,DC=SCHOOLCODE,DC=ad,DC=sd57,DC=bc,DC=ca
+changetype: add
+objectClass: top
+objectClass: organizationalunit
+Description: Students graudating in 2021
+
