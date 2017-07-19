@@ -189,3 +189,26 @@ To backup configuration files:
     'memcache.local' => '\\OC\\Memcache\\APCu',
     
 ```
+
+# Enabling WebDAV Access on clients
+
+If you wish for your Windows PCs to access their NextCloud folders through a WebDAV share, you need to make a Registry change:
+
+```
+
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WebClient\Parameters]
+"BasicAuthLevel"=dword:00000002
+```
+
+The default value is 1, if you choose to turn it back. Refer to [Microsoft KB841215](https://support.microsoft.com/en-us/help/841215/error-message-when-you-try-to-connect-to-a-windows-sharepoint-document) for more information.
+
+Once this is done, the user is able to connect using clients or their OS. For example, in Windows, the user can run a `net use` command:
+
+```
+
+net use Z: http://nc1.sfg.ad.sd57.bc.ca/nextcloud/remote.php/webdav/ /user:%username% *
+```
+
+Note: the address in the example above only works where it can see that URL. We will need a proper URL for external access, which has not been fully set yet.
