@@ -10,11 +10,13 @@ server", or a "member server".
 Domain-member servers are typically used to serve file shares in an AD
 domain, since Directory Controllers are not recommended to fill that role.
 
-__Version:__ 6.0
+__Version:__ 7.0
 
-__Updated:__ July 9, 2017
+__Updated:__ July 21, 2017
 
 __Change Log:__
++ v.7.0, released July 21, 2017:
+  - Updated the smb.conf config section, to add `disable netbios = yes`
 + v.6.0, released July 9, 2017:
   - Updated the NTP configuration section, pointing to a new doc.
 + v.5.1, released July 6, 2017:
@@ -319,6 +321,9 @@ Expect to see three ping responses from the "master" DC.
         
         client signing = mandatory
         server signing = mandatory        
+
+        # Turn off NetBIOS, since our clients don't need it
+        disable netbios = yes
 ```
 Be certain to replace the placeholders `${DOMAIN}`, `${REALM}`,
 `${INTERFACE_NAME}`, and `${IDMAP_RANGE}` with their actual values.

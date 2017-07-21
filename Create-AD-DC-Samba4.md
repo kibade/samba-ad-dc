@@ -8,11 +8,13 @@ If your intention is to create a new DC to add to an existing AD domain, then
 this document is **not the correct guide to follow**. Instead, you want
 `How to Add a New Samba4 Domain Controller (DC) To An Existing Samba4 AD`.
 
-__Version:__ 7.0
+__Version:__ 8.0
 
-__Updated:__ July 9, 2017
+__Updated:__ July 21, 2017
 
 __Change Log:__
++ v.8.0, released July 21, 2017:
+  - Updated the smb.conf config section, to add `disable netbios = yes`
 + v.7.0, released July 9, 2017:
   - Updated the NTP configuration section, pointing to a new doc.
 + v.6.1, released July 7, 2017:
@@ -340,6 +342,9 @@ their actual values):
 ...
         # Allow NTLMv1 authentication, for MSCHAPv2 / FreeRADIUS compatibility
         ntlm auth = yes
+
+        # Turn off NetBIOS, since our clients don't need it
+        disable netbios = yes
 ...
 ```
 
