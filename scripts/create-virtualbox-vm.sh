@@ -43,7 +43,7 @@ vdi_mebibytes=19074
 # Type of the virtual HDD image file to create. Choices are: fixed, standard
 #   fixed == the disk image is a fixed-size (never changing)
 #   standard == the disk image grows dynamically as data fills the virtual HDD
-vdi_variant="fixed"
+vdi_variant="standard"
 
 # Only relevant when hdd_type is "lvm"
 # Full path name of the LV device to be the virtual HDD. It must exist.
@@ -52,6 +52,10 @@ lvm_lv_device="/dev/vg0/vm_$vm"
 # Storage bus type. Choices are: ide, sata
 # The 'ide' type is more stable, so it's the default. Use 'sata' with caution.
 storage_bus_type="ide"
+
+# Number of virtual CPUs to give the VM, an integer > 0.
+# Safest setting is 1; second safest is 2 (but 2 is much less safe than 1).
+num_cpus=1
 
 ###############################################################################
 ### End of Config Variables
@@ -200,7 +204,7 @@ vboxmanage createvm \
 vboxmanage modifyvm "$vm" \
 	--memory $ram_mebibytes \
 	--vram 36 \
-	--cpus 2 \
+	--cpus $num_cpus \
 	--pae on \
 	--hwvirtex on \
 	--paravirtprovider $paravirtprovider \
