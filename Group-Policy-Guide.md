@@ -1,7 +1,8 @@
 Group Policies
 ==============
-*Version 0.6*
+*Version 0.7*
 
+- Added Microsoft Office User Policy Guide
 - Added Drive Mapping Policy
 - Added information regarding Item Level Targeting
 - Added section for creating Group Policy Central Store
@@ -224,6 +225,35 @@ Default\_user
                  -   Browse the network to find printers = **Disabled**
              -   Start Menu and Taskbar
                  -   Turn off feature advertisement balloon notifications = **Enabled**
+         -   Microsoft Office 2013
+             -   Disable items in User Interface
+                 -   Disable commands under File tab | Account = **Enabled**
+             -   First Run
+                 -   Disable First Run Movie = **Enabled**
+                 -   Disable Office First Run on Application Boot = **Enabled**
+             -   Miscellaneous
+                 -   Block signing into Office = **Enabled**, **None allowed**
+                 -   Disable the Office Start screen for all Office applications = **Enabled**
+                 -   Show OneDrive Sign In = **Disabled**
+                 -   Supress recommended settings dialog = **Enabled**
+             -   Privacy
+                 -   Trust Center
+                     -   Automatically receive small updates to improve reliability = **Enabled**
+                     -   Disable Opt-In Wizard on First Run = **Enabled**
+                     -   Enable Customer Experience Improvement Program = **Enabled**
+                     -   Send Office Feedback = **Disabled**
+             -   Telemetry Dashboard
+                 -   Turn on telemetry data collection = **Disabled**
+         -   Microsoft *Program* 2013
+             -   *Program* Options
+                 -   Security
+                     -   Trust Center
+                         -   Trusted Locations
+                             -   Allow Trusted Locations on the network = **Enabled**
+                             -   Trusted Location #1
+                                 -   Path: **\\\\fs1.SCHOOLCODE.ad.sd57.bc.ca**
+                                 -   Allow sub folders: **Enabled**
+         -   Repeat above for Access, Excel, Powerpoint, Publisher, Word
  -   Preferences
      -   Control Panel Settings
          -   Folder Options
