@@ -1,0 +1,6 @@
+# /etc/cron.d/backup-samba-tdbs
+
+LOGFILE="/var/log/backup-samba-tdbs.log"
+
+30 03 * * * root date >> "${LOGFILE}" ; /usr/local/sbin/backup_samba_tdbs.sh >> "${LOGFILE}" 2>&1
+
