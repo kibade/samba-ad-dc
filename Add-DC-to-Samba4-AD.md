@@ -4,11 +4,13 @@ __Summary:__
 This document describes a sequence of steps intended to add a new Domain
 Controller (DC) to an existing Active Directory (AD) domain.
 
-__Version:__ 7.0
+__Version:__ 9.0
 
-__Updated:__ July 9, 2017
+__Updated:__ August 9, 2017
 
 __Change Log:__
++ v.9.0, released August 9, 2017:
+  - Added instructions to install the 'backup-samba-tdbs' script to cron.d.
 + v.7.0, released July 9, 2017:
   - Updated the NTP configuration section, pointing to a new doc.
 + v.6.1, released July 7, 2017:
@@ -648,6 +650,18 @@ wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/ug-dump.sh"
 chown root:root add-students.sh backup_samba_tdbs.sh ug-dump.sh
 chmod 0750 add-students.sh backup_samba_tdbs.sh ug-dump.sh
 ```
+
+---
+### Install `backup-samba-tdbs` script
++ As root, run the following:
+```
+cd /etc/cron.d/
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/backup-samba-tdbs"
+chown root:root backup-samba-tdbs
+chmod 0644 backup-samba-tdbs
+```
+By default, the script runs the `backup_samba_tdbs.sh` utility script daily, at
+3:30am.
 
 ---
 ### The remainder of the steps are only tests (no more config changes)
