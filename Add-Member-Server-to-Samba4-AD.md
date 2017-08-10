@@ -10,11 +10,13 @@ server", or a "member server".
 Domain-member servers are typically used to serve file shares in an AD
 domain, since Directory Controllers are not recommended to fill that role.
 
-__Version:__ 7.0
+__Version:__ 9.0
 
-__Updated:__ July 21, 2017
+__Updated:__ August 10, 2017
 
 __Change Log:__
++ v.9.0, released August 10, 2017:
+  - Added instructions to install the 'backup-samba-tdbs' script to cron.d.
 + v.7.0, released July 21, 2017:
   - Updated the smb.conf config section, to add `disable netbios = yes`
 + v.6.0, released July 9, 2017:
@@ -435,6 +437,28 @@ Expect to see `Administrator` and `Domain Users` IDs.
 net rpc rights grant "${DOMAIN}/Domain Admins" \
         SeDiskOperatorPrivilege -U "${DOMAIN}/administrator"
 ```
+
+---
+### Install utility scripts
++ As root, run the following:
+```
+cd /usr/local/sbin/
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/backup_samba_tdbs.sh"
+chown root:root backup_samba_tdbs.sh
+chmod 0750 backup_samba_tdbs.sh
+```
+
+---
+### Install `backup-samba-tdbs` script to cron.d
++ As root, run the following:
+```
+cd /etc/cron.d/
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/backup-samba-tdbs"
+chown root:root backup-samba-tdbs
+chmod 0644 backup-samba-tdbs
+```
+By default, the script runs the `backup_samba_tdbs.sh` utility script daily, at
+3:30am.
 
 ---
 ### Troubleshooting Winbind
