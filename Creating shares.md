@@ -117,16 +117,16 @@ Standard Shares/Permissions
 		- Domain Admins - Full Control ALLOW (This folder, subfolders and files)
 		- CREATOR OWNER - Full control ALLOW (Subfolders and files only)
 		- CREATOR GROUP - Read & execute ALLOW (Subfolders and files only)
-		- Staff - Create folders (This folder only)
+		- Staff - Read & execute, Create folders (This folder only)
 	- Have each teacher create their own Hand Out folder. Everyone automatically has "Read" access, while the `CREATOR` still has Full Control access
-- Hand-in (Work in progress)
+- Hand-in
 	- Share Permissions
 		- Staff - Change and Read ALLOW
-		- Students - Read ALLOW
+		- Students - Change and Read ALLOW
 	- Security
 		- Domain Admins - Full control ALLOW (This folder, subfolder and files)
 		- Everyone - Read & execute ALLOW (This folder only)
 		- CREATOR OWNER - Full control ALLOW (Subfolders and files only)
 		- CREATOR GROUP - Read & Execute ALLOW (subfolders and files only)
 		- Everyone - Write ALLOW (Subfolders and files only)
-		- Staff - Create folders ALLOW (This folder only)
+		- Staff - Read & execute, Create folders ALLOW (This folder only)
