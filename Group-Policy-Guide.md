@@ -1,7 +1,9 @@
 Group Policies
 ==============
-*Version 0.5*
+*Version 0.6*
 
+- Added Drive Mapping Policy
+- Added information regarding Item Level Targeting
 - Added section for creating Group Policy Central Store
 - Create Starter GPO for Firewall rules
 	- Windows Firewall rules have been MOVED
@@ -62,6 +64,8 @@ With the forest structure, this will make it easier to "target" GPOs to differen
 Policies vs Preferences
 ---
 When you create a new GPO, you'll see two main sections under Computer or User Configuration: **Policies** and **Preferences**. Policies are *mandated* settings that are not to be changed. The programs that support Group Policy will not allow these settings to be changed within their respected programs if a policy is in place. This includes for Administrators.
+
+Preferences also differ by Policies in regards to how many times you apply the setting, or what groups/users/items receive it. We will use "Item Level Targeting" to determine which groups received the settings, for example, mapped network drives. Because competing settings will only choose one, this is the simplest way to ensure the proper drives are mounted automatically for each user, depending on their group membership.
 
 Preferences are *preferred* and can be chosen to be policy or preference. For example, in the *Folder Options* window, you can specify certain settings that are set and *cannot be changed later*. The options can be chosen using the <kbd>F5</kbd> to <kbd>F8</kbd> keys. When the color is red/white the setting will not be able to be changed by the end users. In other words, you disable the option completely from being edited, but you still assign what value belongs there.
 
@@ -254,15 +258,60 @@ Staff\_Users\_Policy
             -   Control Panel
                 -   Personalization
                     -   Password protect the screen save = **Enabled**
+
+Map\_Network\_Drives
+---
+
+
+-   User configuration
     -   Preferences
         -   Windows Settings
             -   Drive Maps
                 -   New-&gt; Mapped Drive
                     -   Action: Create
-                    -   Location: \\\\fs1.SCHOOLCODE.ad.sd57.bc.ca\\Staff
+                    -   Location: \\\\FS1.SCHOOLCODE.ad.sd57.bc.ca\\Staff
                     -   Reconnect: Yes
                     -   Label as: Staff Drive
                     -   Use: S: Drive
+                    -   Show this Drive
+                    -   Common (tab)
+                        -   [x] Item Level Filtering
+                        -   <kbd>Targeting...</kbd>
+                            -   New Item - Security Group
+                            -   <kbd>...</kbd>
+                                -   Search for "Staff", and click <kbd>Check Names</kbd>
+                                -   <kbd>OK</kbd>
+                            -   <kbd>OK</kbd>
+                        -   <kbd>OK</kbd>
+                -   New-&gt; Mapped Drive
+                    -   Action: Create
+                    -   Location: \\\\FS1.SCHOOLCODE.ad.sd57.bc.ca\\Office
+                    -   Reconnect: Yes
+                    -   Label as: Office Drive
+                    -   Use: O: Drive
+                    -   Show this Drive
+                    -   Common (tab)
+                        -   [x] Item Level Filtering
+                        -   <kbd>Targeting...</kbd>
+                            -   New Item - Security Group
+                            -   <kbd>...</kbd>
+                                -   Search for "Office", and click <kbd>Check Names</kbd>
+                                -   <kbd>OK</kbd>
+                            -   <kbd>OK</kbd>
+                        -   <kbd>OK</kbd>
+                -   New-&gt; Mapped Drive
+                    -   Action: Create
+                    -   Location: \\\\FS1.SCHOOLCODE.ad.sd57.bc.ca\\Hand-in
+                    -   Reconnect: Yes
+                    -   Label as: Hand-in Folder
+                    -   Use: I: Drive
+                    -   Show this Drive
+               -   New-&gt; Mapped Drive
+                    -   Action: Create
+                    -   Location: \\\\FS1.SCHOOLCODE.ad.sd57.bc.ca\\Hand-out
+                    -   Reconnect: Yes
+                    -   Label as: Hand-outs Folder
+                    -   Use: J: Drive
                     -   Show this Drive
 
 
