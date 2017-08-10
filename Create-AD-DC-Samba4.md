@@ -8,11 +8,13 @@ If your intention is to create a new DC to add to an existing AD domain, then
 this document is **not the correct guide to follow**. Instead, you want
 `How to Add a New Samba4 Domain Controller (DC) To An Existing Samba4 AD`.
 
-__Version:__ 8.0
+__Version:__ 9.0
 
-__Updated:__ July 21, 2017
+__Updated:__ August 9, 2017
 
 __Change Log:__
++ v.9.0, released August 9, 2017:
+  - Added instructions to install the 'backup-samba-tdbs' script to cron.d.
 + v.8.0, released July 21, 2017:
   - Updated the smb.conf config section, to add `disable netbios = yes`
 + v.7.0, released July 9, 2017:
@@ -487,6 +489,18 @@ wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/ug-dump.sh"
 chown root:root add-students.sh backup_samba_tdbs.sh ug-dump.sh
 chmod 0750 add-students.sh backup_samba_tdbs.sh ug-dump.sh
 ```
+
+---
+### Install `backup-samba-tdbs` script
++ As root, run the following:
+```
+cd /etc/cron.d/
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/backup-samba-tdbs"
+chown root:root backup-samba-tdbs
+chmod 0644 backup-samba-tdbs
+```
+By default, the script runs the `backup_samba_tdbs.sh` utility script daily, at
+3:30am.
 
 ---
 ### Save a backup of the local idmap
