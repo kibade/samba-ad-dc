@@ -12,5 +12,5 @@ LOGFILE="/var/log/ad-sysvol-replication.log"
 
 PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-*/5 * * * * root if [ -n "${MASTER_DC}" ] && [ "${MASTER_DC}" != "$(hostname)" ]; then echo "===BEGAN: $(date)" >> "${LOGFILE}" ; rsync -aAXHI --delay-updates --delete-delay "${MASTER_DC}":"${SYSVOLDIR}/" "${SYSVOLDIR}/" >> "${LOGFILE}" 2>&1 ; echo "===ENDED: $(date)" >> "${LOGFILE}" ; fi
+*/5 * * * * root if [ -n "${MASTER_DC}" ] && [ "${MASTER_DC}" != "$(hostname)" ]; then echo "===BEGAN: $(date)" >> "${LOGFILE}" ; rsync -aAXHc --delay-updates --delete-delay "${MASTER_DC}":"${SYSVOLDIR}/" "${SYSVOLDIR}/" >> "${LOGFILE}" 2>&1 ; echo "===ENDED: $(date)" >> "${LOGFILE}" ; fi
 
