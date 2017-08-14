@@ -8,11 +8,13 @@ If your intention is to create a new DC to add to an existing AD domain, then
 this document is **not the correct guide to follow**. Instead, you want
 `How to Add a New Samba4 Domain Controller (DC) To An Existing Samba4 AD`.
 
-__Version:__ 9.0
+__Version:__ 10.0
 
-__Updated:__ August 9, 2017
+__Updated:__ August 14, 2017
 
 __Change Log:__
++ v.10.0, released August 14, 2017:
+  - Added cron.d script to daily check-and-reset sysvol ACLs.
 + v.9.0, released August 9, 2017:
   - Added instructions to install the 'backup-samba-tdbs' script to cron.d.
 + v.8.0, released July 21, 2017:
@@ -477,6 +479,23 @@ chmod 0644 ad-sysvol-replication
 The script is left unconfigured (`MASTER_DC` is left blank), since this DC is
 currently the "master" DC. The script is installed now, in the case that a
 different DC becomes the master later.
+
+---
+### Install `ad-sysvol-ntacl-checknreset` script
++ As root, run the following:
+```
+cd /etc/cron.d/
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/ad-sysvol-ntacl-checknreset"
+chown root:root ad-sysvol-ntacl-checknreset
+chmod 0644 ad-sysvol-ntacl-checknreset
+```
+Edit the script to set `MASTER_DC="${HOSTNAME}"` (replacing the placeholder
+`${HOSTNAME}` with its actual value).
+
+As configured, the script runs once per day, at 3:00am. The script runs
+`samba-tool ntacl sysvolcheck`, optionally followed by
+`samba-tool ntacl sysvolreset`. The latter command is run only if the former
+returns with an error.
 
 ---
 ### Install utility scripts
