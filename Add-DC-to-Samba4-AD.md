@@ -4,11 +4,13 @@ __Summary:__
 This document describes a sequence of steps intended to add a new Domain
 Controller (DC) to an existing Active Directory (AD) domain.
 
-__Version:__ 9.0
+__Version:__ 10.0
 
-__Updated:__ August 9, 2017
+__Updated:__ August 14, 2017
 
 __Change Log:__
++ v.10.0, released August 14, 2017:
+  - Added cron.d script to daily check-and-reset sysvol ACLs.
 + v.9.0, released August 9, 2017:
   - Added instructions to install the 'backup-samba-tdbs' script to cron.d.
 + v.7.0, released July 9, 2017:
@@ -638,6 +640,19 @@ Edit the script to set `MASTER_DC="${DC1_HOSTNAME}"` (replacing the placeholder
 
 As configured, the script runs every 5 minutes, performing a "pull-style"
 synchronization of `sysvol` from the "master" DC each time.
+
+---
+### Install `ad-sysvol-ntacl-checknreset` script (unconfigured)
++ As root, run the following:
+```
+cd /etc/cron.d/
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/ad-sysvol-ntacl-checknreset"
+chown root:root ad-sysvol-ntacl-checknreset
+chmod 0644 ad-sysvol-ntacl-checknreset
+```
+The script is left unconfigured (`MASTER_DC` is left blank), since this DC is
+not currently the "master" DC. The script is installed now, just in case
+this DC becomes the master later.
 
 ---
 ### Install utility scripts
