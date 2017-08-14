@@ -1,0 +1,13 @@
+# /etc/cron.d/ad-sysvol-ntacl-checknreset
+
+# Hostname of the DC with the "master" sysvol
+# (set to empty to disable sysvol NTACL check-and-reset):
+MASTER_DC=""
+
+# Logfile for the operation:
+LOGFILE="/var/log/ad-sysvol-ntacl-checknreset.log"
+
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+00 03 * * * root if [ -n "${MASTER_DC}" ] && [ "$(hostname)" = "${MASTER_DC}" ] ; then echo "===BEGAN: $(date)" >> "${LOGFILE}" ; if samba-tool ntacl sysvolcheck >> "${LOGFILE}" 2>&1 ; then : ; else samba-tool ntacl sysvolreset >> "${LOGFILE}" 2>&1 ; fi ; echo "===ENDED: $(date)" >> "${LOGFILE}" ; fi
+
