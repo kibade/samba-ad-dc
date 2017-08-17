@@ -1,0 +1,4 @@
+# /etc/cron.d/MailWifi
+# Executes guestwifiaccount.sh @2:50am Mon to Friday
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+50 2 * * 1-5 root  /usr/local/sbin/guestwifiaccount.sh >/dev/null
