@@ -4,11 +4,13 @@ __Summary:__
 This document describes a sequence of steps intended to configure FreeRADIUS
 to authenticate users against an Active Directory (AD) domain.
 
-__Version:__ 2.1
+__Version:__ 3.0
 
-__Updated:__ August 10, 2017
+__Updated:__ August 17, 2017
 
 __Change Log:__
++ v.3.0, released August 17, 2017:
+  - Modified the Guest Wifi section (download scripts, instead of copy/paste).
 + v.2.1, released August 10, 2017
   - Added Guest Wifi section
   - Added GPO to restrict Guest Wifi user from logging into computers
@@ -109,7 +111,7 @@ This creates a local group named `wifiblocked`.
 ```
 adduser ADDOMAINNAME/username wifiblocked
 ```
-Expect to see (something) like the following:
+Expect to see (something like) the following:
 ```
 Adding user `ADDOMAINNAME/username' to group `wifiblocked' ...
 Adding user ADDOMAINNAME/username to group wifiblocked
@@ -119,66 +121,45 @@ Done.
 ```
 deluser ADDOMAINNAME/username wifiblocked
 ```
-Expect to see (something) like the following:
+Expect to see (something like) the following:
 ```
 Removing user `ADDOMAINNAME/username' from group `wifiblocked' ...
 Done.
 ```
 
-Enabling Guest Wifi Password
 ---
-
-On the DC1 system, create the following script under `/usr/local/sbin/guestwifiaccount.sh`:
-
+### Enabling Guest Wifi Password
++ On the "master" DC (i.e. the DC that contains the "master" copy of `sysvol`,
+  probably `dc1`), run the following, as root:
 ```
-#!/bin/bash
-set -eu
-
-# Pick a password at random from the passcodes list.
-p=`shuf -n1 < /usr/local/sbin/passcodes.txt`
-
-# Set guest password to the chosen password.
-samba-tool user setpassword --filter=samaccountname=guestwifi --newpassword=$p -U Administrator
-
-date=`date +"%A, %b %d, %Y"`
-
-msg="Below is the account and password for the Guest-SD57 wireless network \
-as of $date:
-
-Username:               guestwifi
-Password:               $p
-"
-
-echo "$msg" | mailx -s "$date: Public Wireless" guestwifi
-
-exit 0
+cd /usr/local/sbin/
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/words67.txt"
+chown root:root words67.txt
+chmod 0640 words67.txt
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/guestwifiaccount.sh"
+chown root:root guestwifiaccount.sh
+chmod 0750 guestwifiaccount.sh
+cd /etc/cron.d/
+wget "https://github.com/smonaica/samba-ad-dc/raw/master/scripts/MailWifi"
+chown root:root MailWifi
+chmod 0644 MailWifi
 ```
-
-Create a password list, and save it under `/usr/local/sbin/passcodes.txt`. Due to Active Directory requiring stronger passwords than we're used to, I recommend going to [Random.ORG Password Generator](https://www.random.org/passwords/?num=100&len=8&format=plain&rnd=new). This link will constantly change the passwords presented each time you click it.
-
-Create the `/etc/cron.d/MailWifi` script, containing:
-
-```
-# Executes guestwifiaccount.sh @2:50am Mon to Friday
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-50 2 * * 1-5 root  /usr/local/sbin/guestwifiaccount.sh >/dev/null
-```
-
-Enable execution on the script:
-
-```
-chmod +x /usr/local/sbin/guestwifiaccount.sh
-```
-
-Edit your `/etc/aliases` file to append the following line:
-
++ Still on the "master" DC, edit the `/etc/aliases` file to append the
+following line:
 ```
 guestwifi: infoSCHOOLCODE@sd57.bc.ca
 ```
+Be certain to replace the placeholder `SCHOOLCODE` with its actual 3- or
+4-letter code (e.g.: `HHLD` for "Hart Highlands Elementary").
++ In Active Directory Users and Computers (i.e. in the RSAT tool), create
+a new user in the domain under the **Users** context, as follows:
+  - Username: guestwifi
+  - First name: Guestwifi
+  - Last name: User
++ Disable this user from logging in locally on workstations, as follows:
 
-In your Active Directory Users and Computers, create a new user in your domain under the **Users** context called "guestwifi". You can use whatever first name and last name, as long as the username is "guestwifi". To disable this user from logging in locally on workstations, you need to open up the Group Policy Management Console.
-
-Edit your Default\_Computer policy, and add the following setting:
+Open up the Group Policy Management Console, Edit the Default\_Computer
+policy, and add the following setting:
 
 - Computer Configuration
     - Windows Settings
@@ -191,7 +172,9 @@ Edit your Default\_Computer policy, and add the following setting:
                             -   Choose your Guest Wifi user, and click <kbd>OK</kbd>
                         -   <kbd>OK</kbd>
 
-Once you close the window, that user will not be able to log in to a workstation, but can still be authenticated with the Wifi Controller through FreeRADIUS.
+Close the window. The "guestwifi" user will not be able to log in to a
+workstation, but can still be authenticated with the Wifi Controller through
+FreeRADIUS.
 
 ---
 ### Done
