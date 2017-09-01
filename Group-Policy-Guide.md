@@ -1,7 +1,8 @@
 Group Policies
 ==============
-*Version 0.7*
+*Version 0.8*
 
+- Added Google Chrome and Google Chrome Updater Policy Guide
 - Added Microsoft Office User Policy Guide
 - Added Drive Mapping Policy
 - Added information regarding Item Level Targeting
@@ -208,52 +209,90 @@ The Policies to Apply
 							-   Configure Automatic Updates = **4: Auto download and schedule the install; Install during automatic maintenance; 4: Every Wednesday; 15:00; Install updates for other Microsoft products**
 							-   Delay Restart for scheduled installations = **ENABLED, 5 minutes**
 							-   Allow non-administrators to receive update notifications = **ENABLED**
+			- Adobe Acrobat Reader 2017
+				- Preferences
+					- General
+						- Disable automatic updates = **Enabled**
+						- Don't show messages while viewing a document = **Enabled**
+						- Show messages when I launch Reader = **Disabled**
+						- Turn off user participation in the feedback program = **Enabled**
+			- Google
+				- Google Chrome - Default Settings (users can override)
+					- Home Page
+						- Configure the home page URL = **Enabled**, `https://www.sd57.bc.ca/school/SCHOOLCODE/Pages/default.aspx`
+					- Startup Pages
+						- Action on Startup = **Enabled**, `Open a list of URLs`
+						- URLs to open on startup = **Enabled**, `https://www.sd57.bc.ca/school/SCHOOLCODE/Pages/default.aspx`
+				- Google Update
+					- Applications
+						- Update policy override default = **Enabled**, `Updates disabled`
+			- Skype for Business 2016
+				- Microsoft Lync Feature Policies
+					- Prevent users from running Microsoft Lync = **Enabled**
 
 Default\_user
 -------------
 -   User Configuration
- -   Policies
-     -   Software Settings
-     -   Windows Settings
-     -   Administrative Templates
-         -   Control Panel
-             -   Personalization
-                 -   Enable screen saver = **ENABLE**
-                 -   Screen Saver Timeout = **300 seconds**
-                 -   Force specific screen saver = **ssText3d.scr**
-             -   Printers
-                 -   Browse the network to find printers = **Disabled**
-             -   Start Menu and Taskbar
-                 -   Turn off feature advertisement balloon notifications = **Enabled**
-         -   Microsoft Office 2013
-             -   Disable items in User Interface
-                 -   Disable commands under File tab | Account = **Enabled**
-             -   First Run
-                 -   Disable First Run Movie = **Enabled**
-                 -   Disable Office First Run on Application Boot = **Enabled**
-             -   Miscellaneous
-                 -   Block signing into Office = **Enabled**, **None allowed**
-                 -   Disable the Office Start screen for all Office applications = **Enabled**
-                 -   Show OneDrive Sign In = **Disabled**
-                 -   Supress recommended settings dialog = **Enabled**
-             -   Privacy
-                 -   Trust Center
-                     -   Automatically receive small updates to improve reliability = **Enabled**
-                     -   Disable Opt-In Wizard on First Run = **Enabled**
-                     -   Enable Customer Experience Improvement Program = **Enabled**
-                     -   Send Office Feedback = **Disabled**
-             -   Telemetry Dashboard
-                 -   Turn on telemetry data collection = **Disabled**
-         -   Microsoft *Program* 2013
-             -   *Program* Options
-                 -   Security
-                     -   Trust Center
-                         -   Trusted Locations
-                             -   Allow Trusted Locations on the network = **Enabled**
-                             -   Trusted Location #1
-                                 -   Path: **\\\\fs1.SCHOOLCODE.ad.sd57.bc.ca**
-                                 -   Allow sub folders: **Enabled**
-         -   Repeat above for Access, Excel, Powerpoint, Publisher, Word
+	-   Policies
+		-   Software Settings
+		-   Windows Settings
+		-   Administrative Templates
+			- Adobe Acrobat Reader
+				- Preferences
+					- General
+						- Accept EULA = **Enabled**
+						- Display splash screen at launch = **Disabled**
+					- Security
+						- Ask before installing checkbox = **Enabled**
+			-   Control Panel
+				-   Personalization
+					-   Enable screen saver = **ENABLE**
+					-   Screen Saver Timeout = **300 seconds**
+					-   Force specific screen saver = **ssText3d.scr**
+				-   Printers
+					-   Browse the network to find printers = **Disabled**
+				-   Start Menu and Taskbar
+					-   Turn off feature advertisement balloon notifications = **Enabled**
+			- Google
+				- Google Chrome
+					- Always Open PDF files externally = **Enabled**
+					- Enable add person in user manage = **Disabled**
+					- Use built-in DNS Client = **Disabled**
+					- Enable Google Cloud Print proxy = **Disabled**
+					- Enable submission of documents to Google Cloud Print = **Disabled**
+					- Hide the web store from the New Tab Page and app launcher = **Enabled**
+					- Disable synchronization of data with Google = **Enabled**
+					- Enable showing the welcome page on the first browser launch = **Disabled**
+			-   Microsoft Office 2016
+				-   Disable items in User Interface
+					-   Disable commands under File tab | Account = **Enabled**
+				-   First Run
+					-   Disable First Run Movie = **Enabled**
+					-   Disable Office First Run on Application Boot = **Enabled**
+				-   Miscellaneous
+					-   Block signing into Office = **Enabled**, **None allowed**
+					-   Disable the Office Start screen for all Office applications = **Enabled**
+					-   Show OneDrive Sign In = **Disabled**
+					-   Supress recommended settings dialog = **Enabled**
+				-   Privacy
+					-   Trust Center
+						-   Automatically receive small updates to improve reliability = **Enabled**
+						-   Disable Opt-In Wizard on First Run = **Enabled**
+						-   Enable Customer Experience Improvement Program = **Disabled**
+						-   Send Office Feedback = **Disabled**
+						-   Send personal information = **Disabled*
+				-   Telemetry Dashboard
+					-   Turn on telemetry data collection = **Disabled**
+			-   Microsoft *Program* 2016
+				-   *Program* Options
+					-   Security
+						-   Trust Center
+							-   Trusted Locations
+								-   Allow Trusted Locations on the network = **Enabled**
+									-   Trusted Location #1
+									-   Path: **\\\\fs1.SCHOOLCODE.ad.sd57.bc.ca**
+									-   Allow sub folders: **Enabled**
+				-   Repeat above for Access, Excel, Powerpoint, Publisher, Word
  -   Preferences
      -   Control Panel Settings
          -   Folder Options
@@ -415,3 +454,4 @@ Examples of Policy Definitions you can download:
 - Adobe Reader DC 2017 (Classic Track) (ftp://ftp.adobe.com/pub/adobe/reader/win/Acrobat2017/misc/)
 - [Microsoft Office 2016](https://www.microsoft.com/en-ca/download/details.aspx?id=49030)
 - [Microsoft Office 2013](https://www.microsoft.com/en-ca/download/details.aspx?id=35554)
+- [Google Chrome](https://www.chromium.org/administrators/policy-templates)
