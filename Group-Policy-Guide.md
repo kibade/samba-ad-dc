@@ -129,9 +129,9 @@ The Policies to Apply
 				-   Printers
 					-   Allow Printers to be Published = **DISABLE**
 				-   System
-					-   Enable Windows NTP Server
-						-   Windows Time Service
-							-   Time Providers
+					-   Windows Time Service
+						-   Time Providers
+							-  Enable Windows NTP Server
 								-   Configure Windows NTP client = **ENABLE,NTPServer=SCHOOLCODE.ad.sd57.bc.ca,Type=NTP**
 								-   Enable Windows NTP client = **ENABLE**
 					-   Logon
