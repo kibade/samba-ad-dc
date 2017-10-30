@@ -6,8 +6,8 @@ Setup Domain Admin Permissions
 -
 - Grant the required rights to the Domain Admins
 
-`net rpc rights grant "<SCHOOLCODE>\Domain Admins" SeDiskOperatorPrivilege -U "<SCHOOLCODE>\Administrator"` <br />
-`net rpc rights grant "<SCHOOLCODE>\Domain Admins" SeSecurityPrivilege -U "<SCHOOLCODE>\Administrator"`
+net rpc rights grant "<SCHOOLCODE>\Domain Admins" SeDiskOperatorPrivilege -U "<SCHOOLCODE>\Administrator"
+net rpc rights grant "<SCHOOLCODE>\Domain Admins" SeSecurityPrivilege -U "<SCHOOLCODE>\Administrator"
 
 - Add yourself to the Domain Admins group (to be discussed)
 	- Log in to Windows with the Domain Administrator account
@@ -25,26 +25,30 @@ Create the folders on the server
 
 - Create the home folders base
 	- On the server console (as root), create a directory for your school code under `/home`. For example:  
-    `mkdir /home/sfg`
+    mkdir /home/<SchoolCode>
     - Change the owner group to the Domain Admins. For example:  
-    `chown root:"SFG/Domain Admins" /home/sfg` (take note of the forward slash)
+    chown root:"<SchoolCode>/Domain Admins" /home/<SchoolCode> (take note of the forward slash)
     - Change the permissions for the Owner and Group to have Full Control. For example:
-    `chmod 0770 /home/sfg`
+    chmod 0770 /home/<SchooCode>
     - Edit your `/etc/samba/smb.conf` file to add the share declaration **as below**:  
-    `[Users]`  
-    `path = /home/sfg`  
-    `writeable = yes`
+    [Users]  
+    path = /home/<SchoolCode> 
+    writeable = yes
     - Restart Samba (unless you're adding more shares at this time)
     - Continue on Windows
 - Create shared folders
-	- On the server console (as root), create the directories to share under `/usr/local/share`. For example, `/usr/local/share/Staff`
-	- Change the owner group to the Domain Admins. For example: `chown root:"SFG/Domain Admins" /usr/local/share/Staff`
-	- Change the permissions for the Owner and Group to have Full Control. For example: `chmod 0770 /usr/local/share/Staff`
-	- Edit your `/etc/samba/smb.conf` file to add the share declaration **as below**:  
-	`[Staff]`  
-    `path = /usr/local/share/Staff`  
-    `writeable = yes`
-    - Restart Samba (unless you're adding more shares at this time)
+	- On the server console (as root), create the directories to share under `/usr/local/share`. For example, 
+	
+	mkdir /usr/local/share/Staff
+	
+	- Change the owner group to the Domain Admins. For example: chown root:"<SchoolCode>/Domain Admins" /usr/local/share/Staff
+	- Change the permissions for the Owner and Group to have Full Control. For example: chmod 0770 /usr/local/share/Staff
+	- Edit your /etc/samba/smb.conf file to add the share declaration **as below**:  
+	[Staff  
+    path = /usr/local/share/Staff
+    writeable = yes
+    - Reload Samba (unless you're adding more shares at this time)
+	service samba reload
     - Continue in Windows
 
 Setting the Windows Permissions
@@ -82,7 +86,7 @@ Standard Shares/Permissions
 	- Add the Home Folders for the users
 		- Open the ADUC
 		- Browse to your list of users
-		- Select all the users (if only users, press <kbd>Ctrl</kbd>+<kbd>A</kbd>)
+		- Select all the users (if only users, press Ctrl+A)
 		- Right-click and click Properties
 		- Click on Profile
 		- `[X] Home Folder`
