@@ -211,7 +211,7 @@ reboot
 ```
 apt-get update
 apt-get install samba winbind ntp krb5-user dnsutils ldap-utils \
-        ldb-tools smbclient libnss-winbind acl rsync
+        ldb-tools smbclient libnss-winbind acl rsync ca-certificates
 ```
 When/if asked questions related to kerberos domain/realm, simply accept
 the defaults, since kerberos will be reconfigured later, anyway.
