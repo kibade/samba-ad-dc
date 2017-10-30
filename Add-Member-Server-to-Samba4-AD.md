@@ -10,11 +10,13 @@ server", or a "member server".
 Domain-member servers are typically used to serve file shares in an AD
 domain, since Directory Controllers are not recommended to fill that role.
 
-__Version:__ 9.0
+__Version:__ 10.0
 
-__Updated:__ August 10, 2017
+__Updated:__ October 30, 2017
 
 __Change Log:__
++ v.10.0, released October 30, 2017:
+  - Bumped the version following a merge request that added 'ca-certificates'.
 + v.9.0, released August 10, 2017:
   - Added instructions to install the 'backup-samba-tdbs' script to cron.d.
 + v.7.0, released July 21, 2017:
