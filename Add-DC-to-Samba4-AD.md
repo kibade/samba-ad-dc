@@ -4,11 +4,13 @@ __Summary:__
 This document describes a sequence of steps intended to add a new Domain
 Controller (DC) to an existing Active Directory (AD) domain.
 
-__Version:__ 10.0
+__Version:__ 11.0
 
-__Updated:__ August 14, 2017
+__Updated:__ October 30, 2017
 
 __Change Log:__
++ v.11.0, released October 30, 2017:
+  - Changed "ln" instructions to "cp" for "krb5.conf" (As per [Samba Mailing List](https://lists.samba.org/archive/samba/2017-September/210868.html))
 + v.10.0, released August 14, 2017:
   - Added cron.d script to daily check-and-reset sysvol ACLs.
 + v.9.0, released August 9, 2017:
@@ -317,8 +319,7 @@ i.e.: Interactively generate an SSH pubkey for root, accepting all defaults.
 PRIVATE_DIR=$(smbd -b |egrep PRIVATE_DIR |cut -f2- -d':' |sed 's/^ *//')
 cd "${PRIVATE_DIR}"
 rsync -aP ${DC1_HOSTNAME}:"${PRIVATE_DIR}/krb5.conf" ./
-cd /etc/
-ln -s "${PRIVATE_DIR}/krb5.conf"
+cp -p ./krb5.conf /etc/
 ```
 
 ---

@@ -10,11 +10,13 @@ server", or a "member server".
 Domain-member servers are typically used to serve file shares in an AD
 domain, since Directory Controllers are not recommended to fill that role.
 
-__Version:__ 10.0
+__Version:__ 11.0
 
 __Updated:__ October 30, 2017
 
 __Change Log:__
++ v.11.0, released October 30, 2017:
+  - Changed "ln" instructions to "cp" for "krb5.conf" (As per [Samba Mailing List](https://lists.samba.org/archive/samba/2017-September/210868.html))
 + v.10.0, released October 30, 2017:
   - Bumped the version following a merge request that added 'ca-certificates'.
 + v.9.0, released August 10, 2017:
@@ -339,8 +341,7 @@ Be certain to replace the placeholders `${DOMAIN}`, `${REALM}`,
 PRIVATE_DIR=$(smbd -b |egrep PRIVATE_DIR |cut -f2- -d':' |sed 's/^ *//')
 cd "${PRIVATE_DIR}"
 rsync -aP ${DC1_TECHUSER}@${DC1_HOSTNAME}:"${PRIVATE_DIR}/krb5.conf" ./
-cd /etc/
-ln -s "${PRIVATE_DIR}/krb5.conf"
+cp -p ./krb5.conf /etc/
 ```
 
 ---

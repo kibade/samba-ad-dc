@@ -8,11 +8,13 @@ If your intention is to create a new DC to add to an existing AD domain, then
 this document is **not the correct guide to follow**. Instead, you want
 `How to Add a New Samba4 Domain Controller (DC) To An Existing Samba4 AD`.
 
-__Version:__ 10.1
+__Version:__ 11.0
 
 __Updated:__ August 14, 2017
 
 __Change Log:__
++ v.11.0, released October 30, 2017:
+  - Minor edit, to keep consistency with the Add-DC and Add-Member-Server docs.
 + v.10.1, released September 11, 2017:
   - Changed "ln" instructions to "cp" for "krb5.conf" (As per [Samba Mailing List](https://lists.samba.org/archive/samba/2017-September/210868.html))
 + v.10.0, released August 14, 2017:
@@ -383,9 +385,9 @@ Expect to see no output. If errors are reported, fix them before continuing.
 ### Configure kerberos
 + As root, run the following:
 ```
-cd /etc/
 PRIVATE_DIR=$(smbd -b |egrep PRIVATE_DIR |cut -f2- -d':' |sed 's/^ *//')
-cp "${PRIVATE_DIR}/krb5.conf" /etc/
+cd "${PRIVATE_DIR}"
+cp -p ./krb5.conf /etc/
 ```
 
 ---
