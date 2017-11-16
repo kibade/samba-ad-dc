@@ -129,11 +129,6 @@ The Policies to Apply
 				-   Printers
 					-   Allow Printers to be Published = **DISABLE**
 				-   System
-					-   Enable Windows NTP Server
-						-   Windows Time Service
-							-   Time Providers
-								-   Configure Windows NTP client = **ENABLE,NTPServer=SCHOOLCODE.ad.sd57.bc.ca,Type=NTP**
-								-   Enable Windows NTP client = **ENABLE**
 					-   Logon
 						-   Show first sign-in animation = **Disable**
 						-   Turn off Windows Startup sound = **Enable** (Windows 7 only)
@@ -209,6 +204,11 @@ The Policies to Apply
 							-   Configure Automatic Updates = **4: Auto download and schedule the install; Install during automatic maintenance; 4: Every Wednesday; 15:00; Install updates for other Microsoft products**
 							-   Delay Restart for scheduled installations = **ENABLED, 5 minutes**
 							-   Allow non-administrators to receive update notifications = **ENABLED**
+					-   Windows Time Service
+						-   Time Providers
+							-  Enable Windows NTP Server
+								-   Configure Windows NTP client = **ENABLE,NTPServer=SCHOOLCODE.ad.sd57.bc.ca,Type=NTP**
+								-   Enable Windows NTP client = **ENABLE**
 			- Adobe Acrobat Reader 2017
 				- Preferences
 					- General
