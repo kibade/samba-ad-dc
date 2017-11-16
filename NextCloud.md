@@ -129,7 +129,7 @@ Adding external storage e.g. Mount Samba shares
 
 'user_backends' => array (
     0 => array (
-        'class' => 'OC\_User\_SMB',
+        'class' => 'OC_User_SMB',
         'arguments' => array (
             0 => 'localhost'
          ),
