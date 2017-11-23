@@ -150,6 +150,12 @@ Adding external storage e.g. Mount Samba shares
 -   Domain = SCHOOLCODE (NetBIOS name for your domain - the part before `.ad.sd57.bc.ca` in your domain name)
 -   Repeat for each share you want the user to have access to.
 
+# Set the user limit to prevent client sync apps from uploading and downloading. This will still allow the "External Storage" access.
+-   Login to NextCloud as Admin, click on the gear (top right corner) and select "Users"
+-   On the bottom left, click on setting.
+-   On Default Quota, select "Other ..." from the pull down selections.
+-   In the edit field, type 1B. This stands for 1 Byte. Hit enter.
+
 # Increasing upload file limit
 
 -   Edit `/var/www/nextcloud/.htaccess`
