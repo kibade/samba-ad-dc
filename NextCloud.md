@@ -156,6 +156,23 @@ Adding external storage e.g. Mount Samba shares
 -   On Default Quota, select "Other ..." from the pull down selections.
 -   In the edit field, type 1B. This stands for 1 Byte. Hit enter.
 
+# Block Desktop, Android and IOS Client Access, Only allow web access
+- Back to NextCloud as Admin, click on the gear (top right corner) and select "Admin"
+- On left click on "File access control
+
+- Click on Add rule group and type "Desktop Client"
+- Click on Add rule and select "Request user agent" from the pull down list.
+- On the next box to your right select "is" from the pull down list.
+- On the next box to your right slect "Desktop Client" from the pull down list.
+- Click on Add rule group and type "IOS Client"
+- Click on Add rule and select "Request user agent" from the pull down list.
+- On the next box to your right select "is" from the pull down list.
+- On the next box to your right slect "IOS Client" from the pull down list.
+- Click on Add rule group and type "Android Client"
+- Click on Add rule and select "Request user agent" from the pull down list.
+- On the next box to your right select "is" from the pull down list.
+- On the next box to your right slect "Android Client" from the pull down list.
+
 # Increasing upload file limit
 
 -   Edit `/var/www/nextcloud/.htaccess`
